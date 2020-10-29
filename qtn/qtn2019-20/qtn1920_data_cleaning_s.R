@@ -126,7 +126,7 @@ dfpre_HLC$intervention <- 1
 dfpre_HLC$control <- 0
 
 names(dfpre_HLC)[9:84] <- items_names
-df2 <- plyr::rbind.fill(df, dfpre_HLC)
+df <- plyr::rbind.fill(df, dfpre_HLC)
 rm(dfpre_HLC)
 
 df$age <- as.numeric(floor((as.Date("2020-06-30")-as.Date(df$dob))/365.2425))
@@ -135,105 +135,113 @@ df$age <- as.numeric(floor((as.Date("2020-06-30")-as.Date(df$dob))/365.2425))
 df$P5xc_1 <- ifelse(df$T1==1, df$P5xa_1, NA)
 df$P5xa_1 <- ifelse(df$T1==0, df$P5xa_1, NA)
 
-df %>% select(starts_with("P1_")) %>% colnames(.) -> P1
-df %>% select(starts_with("P1t2_")) %>% colnames(.) -> P1e # elearning
-df %>% select(starts_with("P2x")) %>% colnames(.) -> P2
-df %>% select(starts_with("P2t2x")) %>% colnames(.) -> P2e # elearning
-df %>% select(starts_with("P3_")) %>% colnames(.) -> P3
-df %>% select(starts_with("P4_")) %>% colnames(.) -> P4
-df %>% select(starts_with("P5xa_")) %>% colnames(.) -> P5a
-df %>% select(starts_with("P5xb_")) %>% colnames(.) -> P5b
-df %>% select(starts_with("P5xc_")) %>% colnames(.) -> P5a2
-df %>% select(starts_with("P6_")) %>% colnames(.) -> P6
-df %>% select(starts_with("P7_")) %>% colnames(.) -> P7
-df %>% select(starts_with("P08x1")) %>% colnames(.) -> P8a
-df %>% select(starts_with("P08x2")) %>% colnames(.) -> P8b
-df %>% select(starts_with("P09x1")) %>% colnames(.) -> P9a
-df %>% select(starts_with("P09x2")) %>% colnames(.) -> P9b
-df %>% select(starts_with("P09x3")) %>% colnames(.) -> P9c
+# the purpose of this function is to keep the original items unchanged
+scoring_level1 <- function(df){
+  df %>% select(starts_with("P1_")) %>% colnames(.) -> P1
+  df %>% select(starts_with("P1t2_")) %>% colnames(.) -> P1e # elearning
+  df %>% select(starts_with("P2x")) %>% colnames(.) -> P2
+  df %>% select(starts_with("P2t2x")) %>% colnames(.) -> P2e # elearning
+  df %>% select(starts_with("P3_")) %>% colnames(.) -> P3
+  df %>% select(starts_with("P4_")) %>% colnames(.) -> P4
+  df %>% select(starts_with("P5xa_")) %>% colnames(.) -> P5a
+  df %>% select(starts_with("P5xb_")) %>% colnames(.) -> P5b
+  df %>% select(starts_with("P5xc_")) %>% colnames(.) -> P5a2
+  df %>% select(starts_with("P6_")) %>% colnames(.) -> P6
+  df %>% select(starts_with("P7_")) %>% colnames(.) -> P7
+  df %>% select(starts_with("P08x1")) %>% colnames(.) -> P8a
+  df %>% select(starts_with("P08x2")) %>% colnames(.) -> P8b
+  df %>% select(starts_with("P09x1")) %>% colnames(.) -> P9a
+  df %>% select(starts_with("P09x2")) %>% colnames(.) -> P9b
+  df %>% select(starts_with("P09x3")) %>% colnames(.) -> P9c
+  
+  reverse_P1 <- P1[c(2, 3, 7, 8, 9, 12)]
+  reverse_P1e <- P1e[c(2, 3, 7, 8, 9)]
+  df[reverse_P1] <- (df[reverse_P1]-1)*-1  # reverse (0,1) to (1,0)
+  df[reverse_P1e] <- (df[reverse_P1e]-1)*-1  # reverse (0,1) to (1,0)
+  
+  df[P2[1]] <- ifelse(df[P2[1]] == 'D', 1, 0) # D is correct
+  df[P2[2]] <- ifelse(df[P2[2]] == 'C', 1, 0)
+  df[P2[3]] <- ifelse(df[P2[3]] == 'A', 1, 0)
+  df[P2[4]] <- ifelse(df[P2[4]] == 'D', 1, 0)
+  df[P2[5]] <- ifelse(df[P2[5]] == 'D', 1, 0)
+  df[P2[6]] <- ifelse(df[P2[6]] == 'C', 1, 0)
+  df[P2[7]] <- ifelse(df[P2[7]] == 'D', 1, 0)
+  df[P2[8]] <- ifelse(df[P2[8]] == 'D', 1, 0)
+  
+  df[P2e[1]] <- ifelse(df[P2e[1]] == 'D', 1, 0)
+  df[P2e[2]] <- ifelse(df[P2e[2]] == 'C', 1, 0)
+  df[P2e[3]] <- ifelse(df[P2e[3]] == 'A', 1, 0)
+  df[P2e[4]] <- ifelse(df[P2e[4]] == 'D', 1, 0)
+  df[P2e[5]] <- ifelse(df[P2e[5]] == 'D', 1, 0)
+  df[P2e[6]] <- ifelse(df[P2e[6]] == 'C', 1, 0)
+  df[P2e[7]] <- ifelse(df[P2e[7]] == 'C', 1, 0)
+  df[P2e[8]] <- ifelse(df[P2e[8]] == 'B', 1, 0)
+  
+  # GHQ
+  df[P3] <- (df[P3]-1) # from (1:4) to (0:3)
+  reverse_P3 <- P3[c(1, 3, 4, 7, 8, 12)]
+  df[reverse_P3] <- (df[reverse_P3]-3)*-1  # reverse (0:3) to (3:0)
+  
+  # negative thinking
+  reverse_P4 <- P4[c(1, 3, 5, 7, 9, 11, 13, 15, 17, 19)]
+  
+  # SLSS
+  reverse_P5a <- P5a[c(3, 4)]
+  df[reverse_P5a] <- (df[reverse_P5a]-7)*-1 # reverse (1:6) to (6:1)
+  
+  # Empathy
+  reverse_P6 <- P6[c(3)]
+  df[reverse_P6] <- (df[reverse_P6]-4)*-1  # reverse (0:4) to (4:0)
+  
+  # Gratitude
+  reverse_P7 <- P7[c(3, 6)]
+  df[reverse_P7] <- (df[reverse_P7]-8)*-1  # reverse (1:7) to (7:1)
+  
+  # Compassion
+  df[P8a] <- df[P8a]+1  # reverse (0:4) to (1:5)
+  reverse_P8a <- P8a[c(3)]
+  df[reverse_P8a] <- (df[reverse_P8a]-6)*-1  # reverse (1:5) to (5:1)
+  
+  # Self-compassion
+  df[P8b] <- df[P8b]+1  # reverse (0:4) to (1:5)
+  reverse_P8b <- P8b[c(3, 4, 5, 7, 9)]
+  df[reverse_P8b] <- (df[reverse_P8b]-6)*-1  # reverse (1:5) to (5:1)
+  
+  # Prejudice
+  df[P9a] <- lapply(df[P9a], FUN = function(x) car::recode(x, "3 = 1.5"))  # recode (yes, no, not sure) to (yes, not sure, no)
+  df[P9c] <- lapply(df[P9c], FUN = function(x) car::recode(x, "3 = 1.5"))  # recode (yes, no, not sure) to (yes, not sure, no)
+  P9c1 <- P9c[1:5]
+  P9c2 <- P9c[6:7]
+  
+  P9a_b <- c(P9a, P9b)
+  
+  df$elearning <- ifelse(!is.na(df$P1_1), 0,
+                         ifelse(!is.na(df$P1t2_1), 1, NA))
+  
+  df <- df %>%
+    mutate(q1 = ifelse(!elearning, rowSums(.[P1], na.rm = FALSE), rowSums(.[P1e], na.rm = FALSE)), # Q1&2 are Mental Health Knowledge, na.rm = FALSE means any NA in an item results in NA for the scale
+           q2 = ifelse(!elearning, rowSums(.[P2], na.rm = FALSE), rowSums(.[P2e], na.rm = FALSE)),
+           q3 = rowSums(.[P3], na.rm = FALSE), # GHQ Psychological Distress range(0-36)
+           q4neg = rowSums(.[reverse_P4], na.rm = FALSE),  # Negative Thinking (CATS-N/P) range(0-40)
+           q4pos = rowSums(.[P4[!(P4 %in% reverse_P4)]], na.rm = FALSE),  # Positive Thinking (CATS-N/P) range(0-40)
+           q5a = rowSums(.[P5a], na.rm = FALSE), # SLSS, range(7-42)
+           q5b = rowSums(.[P5b], na.rm = FALSE), # BMSLSS, range(5-35)
+           q5a2 = rowSums(.[P5a2], na.rm = FALSE), # 1-item on satisfaction to replace SLSS in post-test, range(1-7)
+           q6 = rowSums(.[P6], na.rm = FALSE), # Empathy range(0-24)
+           q7 = rowSums(.[P7], na.rm = FALSE), # Gratitude range(6-42)
+           q8a = rowMeans(.[P8a], na.rm = FALSE), # partial compassion range(1-5), mean instead of sum
+           q8b = rowMeans(.[P8b], na.rm = FALSE), # partial self-compassion range(1-5), mean instead of sum
+           q9a_b= rowMeans(.[P9a_b], na.rm = FALSE), # help-seeking, mean instead of sum
+           q9c = rowMeans(.[P9c], na.rm = FALSE) # partial PPMI range(1-3), mean instead of sum
+    )
+  
+  df$q1_2 <- df$q1 + df$q2
+  
+  return(subset(df, select = c(q1, q2, q1_2, q3, q4neg, q4pos, q5a, q5b, q5a2, q6, q7, q8a, q8b, q9a_b, q9c
+  )))
+}
 
-reverse_P1 <- P1[c(2, 3, 7, 8, 9, 12)]
-reverse_P1e <- P1e[c(2, 3, 7, 8, 9)]
-df[reverse_P1] <- (df[reverse_P1]-1)*-1  # reverse (0,1) to (1,0)
-df[reverse_P1e] <- (df[reverse_P1e]-1)*-1  # reverse (0,1) to (1,0)
-
-df[P2[1]] <- ifelse(df[P2[1]] == 'D', 1, 0) # D is correct
-df[P2[2]] <- ifelse(df[P2[2]] == 'C', 1, 0)
-df[P2[3]] <- ifelse(df[P2[3]] == 'A', 1, 0)
-df[P2[4]] <- ifelse(df[P2[4]] == 'D', 1, 0)
-df[P2[5]] <- ifelse(df[P2[5]] == 'D', 1, 0)
-df[P2[6]] <- ifelse(df[P2[6]] == 'C', 1, 0)
-df[P2[7]] <- ifelse(df[P2[7]] == 'D', 1, 0)
-df[P2[8]] <- ifelse(df[P2[8]] == 'D', 1, 0)
-
-df[P2e[1]] <- ifelse(df[P2e[1]] == 'D', 1, 0)
-df[P2e[2]] <- ifelse(df[P2e[2]] == 'C', 1, 0)
-df[P2e[3]] <- ifelse(df[P2e[3]] == 'A', 1, 0)
-df[P2e[4]] <- ifelse(df[P2e[4]] == 'D', 1, 0)
-df[P2e[5]] <- ifelse(df[P2e[5]] == 'D', 1, 0)
-df[P2e[6]] <- ifelse(df[P2e[6]] == 'C', 1, 0)
-df[P2e[7]] <- ifelse(df[P2e[7]] == 'C', 1, 0)
-df[P2e[8]] <- ifelse(df[P2e[8]] == 'B', 1, 0)
-
-# GHQ
-df[P3] <- (df[P3]-1) # from (1:4) to (0:3)
-reverse_P3 <- P3[c(1, 3, 4, 7, 8, 12)]
-df[reverse_P3] <- (df[reverse_P3]-3)*-1  # reverse (0:3) to (3:0)
-
-# negative thinking
-reverse_P4 <- P4[c(1, 3, 5, 7, 9, 11, 13, 15, 17, 19)]
-
-# SLSS
-reverse_P5a <- P5a[c(3, 4)]
-df[reverse_P5a] <- (df[reverse_P5a]-7)*-1 # reverse (1:6) to (6:1)
-
-# Empathy
-reverse_P6 <- P6[c(3)]
-df[reverse_P6] <- (df[reverse_P6]-4)*-1  # reverse (0:4) to (4:0)
-
-# Gratitude
-reverse_P7 <- P7[c(3, 6)]
-df[reverse_P7] <- (df[reverse_P7]-8)*-1  # reverse (1:7) to (7:1)
-
-# Compassion
-df[P8a] <- df[P8a]+1  # reverse (0:4) to (1:5)
-reverse_P8a <- P8a[c(3)]
-df[reverse_P8a] <- (df[reverse_P8a]-6)*-1  # reverse (1:5) to (5:1)
-
-# Self-compassion
-df[P8b] <- df[P8b]+1  # reverse (0:4) to (1:5)
-reverse_P8b <- P8b[c(3, 4, 5, 7, 9)]
-df[reverse_P8b] <- (df[reverse_P8b]-6)*-1  # reverse (1:5) to (5:1)
-
-# Prejudice
-df[P9a] <- lapply(df[P9a], FUN = function(x) car::recode(x, "3 = 1.5"))  # recode (yes, no, not sure) to (yes, not sure, no)
-df[P9c] <- lapply(df[P9c], FUN = function(x) car::recode(x, "3 = 1.5"))  # recode (yes, no, not sure) to (yes, not sure, no)
-P9c1 <- P9c[1:5]
-P9c2 <- P9c[6:7]
-
-P9a_b <- c(P9a, P9b)
-
-df$elearning <- ifelse(!is.na(df$P1_1), 0,
-                       ifelse(!is.na(df$P1t2_1), 1, NA))
-
-df <- df %>%
-  mutate(q1 = ifelse(!elearning, rowSums(.[P1], na.rm = FALSE), rowSums(.[P1e], na.rm = FALSE)), # Q1&2 are Mental Health Knowledge, na.rm = FALSE means any NA in an item results in NA for the scale
-         q2 = ifelse(!elearning, rowSums(.[P2], na.rm = FALSE), rowSums(.[P2e], na.rm = FALSE)),
-         q3 = rowSums(.[P3], na.rm = FALSE), # GHQ Psychological Distress range(0-36)
-         q4neg = rowSums(.[reverse_P4], na.rm = FALSE),  # Negative Thinking (CATS-N/P) range(0-40)
-         q4pos = rowSums(.[P4[!(P4 %in% reverse_P4)]], na.rm = FALSE),  # Positive Thinking (CATS-N/P) range(0-40)
-         q5a = rowSums(.[P5a], na.rm = FALSE), # SLSS, range(7-42)
-         q5b = rowSums(.[P5b], na.rm = FALSE), # BMSLSS, range(5-35)
-         q5a2 = rowSums(.[P5a2], na.rm = FALSE), # 1-item on satisfaction to replace SLSS in post-test, range(1-7)
-         q6 = rowSums(.[P6], na.rm = FALSE), # Empathy range(0-24)
-         q7 = rowSums(.[P7], na.rm = FALSE), # Gratitude range(6-42)
-         q8a = rowMeans(.[P8a], na.rm = FALSE), # partial compassion range(1-5), mean instead of sum
-         q8b = rowMeans(.[P8b], na.rm = FALSE), # partial self-compassion range(1-5), mean instead of sum
-         q9a_b= rowMeans(.[P9a_b], na.rm = FALSE), # help-seeking, mean instead of sum
-         q9c = rowMeans(.[P9c], na.rm = FALSE) # partial PPMI range(1-3), mean instead of sum
-         )
-
-df$q1_2 <- df$q1 + df$q2
+df <- cbind(df, scoring_level1(df))
 
 df <- subset(df, select = c(sch, imputed_sch, form, class, student_num, age, sex,
                                   q1, q2, q1_2, q3, q4neg, q4pos, q5a, q5b, q5a2, q6, q7, q8a, q8b, q9a_b, q9c,
@@ -241,7 +249,6 @@ df <- subset(df, select = c(sch, imputed_sch, form, class, student_num, age, sex
 
 dflevel1 <- df
 rm(df)
-
 
 # level 2 ----
 setwd(sprintf("~%s/qtn/qtn2019-20/secondary", setpath))
@@ -357,94 +364,101 @@ df$intervention <- ifelse( (df$sch == "LHKSS" & df$form == 2) | # intervention g
                              (df$sch == "CWSFMSS" & df$form == 3), 1, NA) # no control group for level 2 this year
 df$control <- ifelse(df$intervention, 0, 1)
 
-df %>% select(starts_with("Q01x01")) %>% colnames(.) -> P1
-df %>% select(starts_with("Q01x0") & ends_with(sprintf("0%s", 2:5))) %>% colnames(.)  -> P2
-df %>% select(starts_with("A01_")) %>% colnames(.) -> P3 # C-IRI
-df %>% select(starts_with("B01_")) %>% colnames(.) -> P4 # Empathy Quotient (EQ)
-df %>% select(starts_with("C01_")) %>% colnames(.) -> P5 # Emotional Competence & Behavioural Competence
-df %>% select(starts_with("D01_")) %>% colnames(.) -> P6a # SLSS (pre-test only)
-df %>% select(starts_with("P5xb_")) %>% colnames(.) -> P6b # BMSLSS (pre-test D02_ already replaced with P5xb_, same as post-test variable names)
-df %>% select(starts_with("P3_")) %>% colnames(.) -> P7 # GHQ (pre-test E01_ already replaced with P3_, same as post-test variable names)
-df %>% select(starts_with("P08x1")) %>% colnames(.) -> P8a
-df %>% select(starts_with("P08x2")) %>% colnames(.) -> P8b
-df %>% select(starts_with("P09x1")) %>% colnames(.) -> P9a
-df %>% select(starts_with("P09x2")) %>% colnames(.) -> P9b
-df %>% select(starts_with("P09x3")) %>% colnames(.) -> P9c
+scoring_level2 <- function(df){
+  df %>% select(starts_with("Q01x01")) %>% colnames(.) -> P1
+  df %>% select(starts_with("Q01x0") & ends_with(sprintf("0%s", 2:5))) %>% colnames(.)  -> P2
+  df %>% select(starts_with("A01_")) %>% colnames(.) -> P3 # C-IRI
+  df %>% select(starts_with("B01_")) %>% colnames(.) -> P4 # Empathy Quotient (EQ)
+  df %>% select(starts_with("C01_")) %>% colnames(.) -> P5 # Emotional Competence & Behavioural Competence
+  df %>% select(starts_with("D01_")) %>% colnames(.) -> P6a # SLSS (pre-test only)
+  df %>% select(starts_with("P5xb_")) %>% colnames(.) -> P6b # BMSLSS (pre-test D02_ already replaced with P5xb_, same as post-test variable names)
+  df %>% select(starts_with("P3_")) %>% colnames(.) -> P7 # GHQ (pre-test E01_ already replaced with P3_, same as post-test variable names)
+  df %>% select(starts_with("P08x1")) %>% colnames(.) -> P8a
+  df %>% select(starts_with("P08x2")) %>% colnames(.) -> P8b
+  df %>% select(starts_with("P09x1")) %>% colnames(.) -> P9a
+  df %>% select(starts_with("P09x2")) %>% colnames(.) -> P9b
+  df %>% select(starts_with("P09x3")) %>% colnames(.) -> P9c
+  
+  reverse_P1 <- P1[c(1, 3, 5, 6, 10)] 
+  df[reverse_P1] <- (df[reverse_P1]-1)*-1  # reverse (0,1) to (1,0)
+  
+  df[P2[1]] <- ifelse(df[P2[1]] == 'C', 1, 0) # C is correct
+  df[P2[2]] <- ifelse(df[P2[2]] == 'D', 1, 0) 
+  df[P2[3]] <- ifelse(df[P2[3]] == 'B', 1, 0) 
+  df[P2[4]] <- ifelse(df[P2[4]] == 'D', 1, 0) 
+  
+  # C-IRI empathy subscales
+  P3_PD <- P3[c(3, 6, 9, 13, 15, 18, 21)] # personal distress, range(0-28) 
+  P3_FS <- P3[c(2, 8, 12, 20)] # fantasy scale, range(0-16)
+  P3_ES <- P3[c(1, 4, 5, 7, 10, 11, 14, 16, 17, 19, 22)] # empathy scale, range(0-44)
+  
+  reverse_P3 <- P3[c(8, 9, 10, 11, 14)] 
+  df[reverse_P3] <- (df[reverse_P3]-4)*-1  # reverse (0:4) to (4:0)
+  
+  # Empathy Quotient (EQ)
+  reverse_P4 <- P4[c(3, 4, 5, 7, 11, 17)]  # note that original values 1 = strongly agree, 4 = strongly disagree
+  df[P4[!(P4 %in% reverse_P4)]] <- lapply(df[P4[!(P4 %in% reverse_P4)]], function(x) plyr::mapvalues(x, c(1,2,3,4), c(2,1,0,0))) # convert (1,2,3,4) to (2,1,0,0)
+  df[reverse_P4] <- lapply(df[reverse_P4], function(x) plyr::mapvalues(x, c(1,2,3,4), c(0,0,1,2))) # convert (1,2,3,4) to (0,0,1,2)
+  
+  # Emotional Competence & Behavioural Competence
+  P5a <- P5[c(1:6)] 
+  P5b <- P5[c(7:12)] 
+  reverse_P5b <- P5b[c(6)] # 12th question in qC which is the 6th question in qC2
+  df[reverse_P5b] <- (df[reverse_P5b]-7)*-1 # reverse (1:6) to (6:1)
+  
+  # SLSS
+  reverse_P6a <- P6a[c(3, 4)]
+  df[reverse_P6a] <- (df[reverse_P6a]-7)*-1 # reverse (1:6) to (6:1)
+  
+  # GHQ
+  df[P7] <- (df[P7]-1) # from (1:4) to (0:3)
+  reverse_P7 <- P7[c(1, 3, 4, 7, 8, 12)] 
+  df[reverse_P7] <- (df[reverse_P7]-3)*-1  # reverse (0:3) to (3:0)
+  
+  # Compassion
+  df[P8a] <- df[P8a]+1  # reverse (0:4) to (1:5)
+  reverse_P8a <- P8a[c(3)] 
+  df[reverse_P8a] <- (df[reverse_P8a]-6)*-1  # reverse (1:5) to (5:1)
+  
+  # Self-compassion
+  df[P8b] <- df[P8b]+1  # reverse (0:4) to (1:5)
+  reverse_P8b <- P8b[c(3, 4, 5, 7, 9)] 
+  df[reverse_P8b] <- (df[reverse_P8b]-6)*-1  # reverse (1:5) to (5:1)
+  
+  # Prejudice
+  df[P9a] <- lapply(df[P9a], FUN = function(x) car::recode(x, "3 = 1.5"))  # recode (yes, no, not sure) to (yes, not sure, no)
+  df[P9c] <- lapply(df[P9c], FUN = function(x) car::recode(x, "3 = 1.5"))  # recode (yes, no, not sure) to (yes, not sure, no)
+  P9c1 <- P9c[1:5]
+  P9c2 <- P9c[6:7]
+  
+  P9a_b <- c(P9a, P9b)
+  
+  df <- df %>% 
+    mutate(q1 = rowSums(.[P1], na.rm = FALSE), # Q1&2 are Mental Health Knowledge, na.rm = FALSE means any NA in an item results in NA for the scale
+           q2 = rowSums(.[P2], na.rm = FALSE),
+           q3 = rowSums(.[P3], na.rm = FALSE), # empathy C-IRI range(0-88)
+           q3_PD = rowSums(.[P3_PD], na.rm = FALSE), # C-IRI personal distress, range(0-28) 
+           q3_FS = rowSums(.[P3_FS], na.rm = FALSE), # C-IRI fantasy scale, range(0-16)
+           q3_ES = rowSums(.[P3_ES], na.rm = FALSE), # C-IRI empathy scale, range(0-44)
+           q4 = rowSums(.[P4], na.rm = FALSE), # Empathy Quotient (EQ), range(0-44)
+           q5a = rowSums(.[P5a], na.rm = FALSE), # Emotional Competence, range(6-36)
+           q5b = rowSums(.[P5b], na.rm = FALSE), # Behavioural Competence, range(6-36)
+           q6a = rowSums(.[P6a], na.rm = FALSE), # SLSS, range(7-42)
+           q6b = rowSums(.[P6b], na.rm = FALSE), # BMSLSS, range(5-35)
+           q7 = rowSums(.[P7], na.rm = FALSE), # GHQ Psychological Distress range(0-36)
+           q8a = rowMeans(.[P8a], na.rm = FALSE), # partial compassion range(1-5), mean instead of sum
+           q8b = rowMeans(.[P8b], na.rm = FALSE), # partial self-compassion range(1-5), mean instead of sum
+           q9a_b= rowMeans(.[P9a_b], na.rm = FALSE), # help-seeking, mean instead of sum
+           q9c = rowMeans(.[P9c], na.rm = FALSE) # partial PPMI range(1-2), mean instead of sum
+    )
+  
+  df$q1_2 <- df$q1 + df$q2
+  
+  return(subset(df, select = c(q1, q2, q1_2, q3, q3_PD, q3_FS, q3_ES, q4, q5a, q5b, q6a, q6b, q7, q8a, q8b, q9a_b, q9c
+  )))
+}
 
-reverse_P1 <- P1[c(1, 3, 5, 6, 10)] 
-df[reverse_P1] <- (df[reverse_P1]-1)*-1  # reverse (0,1) to (1,0)
-
-df[P2[1]] <- ifelse(df[P2[1]] == 'C', 1, 0) # C is correct
-df[P2[2]] <- ifelse(df[P2[2]] == 'D', 1, 0) 
-df[P2[3]] <- ifelse(df[P2[3]] == 'B', 1, 0) 
-df[P2[4]] <- ifelse(df[P2[4]] == 'D', 1, 0) 
-
-# C-IRI empathy subscales
-P3_PD <- P3[c(3, 6, 9, 13, 15, 18, 21)] # personal distress, range(0-28) 
-P3_FS <- P3[c(2, 8, 12, 20)] # fantasy scale, range(0-16)
-P3_ES <- P3[c(1, 4, 5, 7, 10, 11, 14, 16, 17, 19, 22)] # empathy scale, range(0-44)
-
-reverse_P3 <- P3[c(8, 9, 10, 11, 14)] 
-df[reverse_P3] <- (df[reverse_P3]-4)*-1  # reverse (0:4) to (4:0)
-
-# Empathy Quotient (EQ)
-reverse_P4 <- P4[c(3, 4, 5, 7, 11, 17)]  # note that original values 1 = strongly agree, 4 = strongly disagree
-df[P4[!(P4 %in% reverse_P4)]] <- lapply(df[P4[!(P4 %in% reverse_P4)]], function(x) plyr::mapvalues(x, c(1,2,3,4), c(2,1,0,0))) # convert (1,2,3,4) to (2,1,0,0)
-df[reverse_P4] <- lapply(df[reverse_P4], function(x) plyr::mapvalues(x, c(1,2,3,4), c(0,0,1,2))) # convert (1,2,3,4) to (0,0,1,2)
-
-# Emotional Competence & Behavioural Competence
-P5a <- P5[c(1:6)] 
-P5b <- P5[c(7:12)] 
-reverse_P5b <- P5b[c(6)] # 12th question in qC which is the 6th question in qC2
-df[reverse_P5b] <- (df[reverse_P5b]-7)*-1 # reverse (1:6) to (6:1)
-
-# SLSS
-reverse_P6a <- P6a[c(3, 4)]
-df[reverse_P6a] <- (df[reverse_P6a]-7)*-1 # reverse (1:6) to (6:1)
-
-# GHQ
-df[P7] <- (df[P7]-1) # from (1:4) to (0:3)
-reverse_P7 <- P7[c(1, 3, 4, 7, 8, 12)] 
-df[reverse_P7] <- (df[reverse_P7]-3)*-1  # reverse (0:3) to (3:0)
-
-# Compassion
-df[P8a] <- df[P8a]+1  # reverse (0:4) to (1:5)
-reverse_P8a <- P8a[c(3)] 
-df[reverse_P8a] <- (df[reverse_P8a]-6)*-1  # reverse (1:5) to (5:1)
-
-# Self-compassion
-df[P8b] <- df[P8b]+1  # reverse (0:4) to (1:5)
-reverse_P8b <- P8b[c(3, 4, 5, 7, 9)] 
-df[reverse_P8b] <- (df[reverse_P8b]-6)*-1  # reverse (1:5) to (5:1)
-
-# Prejudice
-df[P9a] <- lapply(df[P9a], FUN = function(x) car::recode(x, "3 = 1.5"))  # recode (yes, no, not sure) to (yes, not sure, no)
-df[P9c] <- lapply(df[P9c], FUN = function(x) car::recode(x, "3 = 1.5"))  # recode (yes, no, not sure) to (yes, not sure, no)
-P9c1 <- P9c[1:5]
-P9c2 <- P9c[6:7]
-
-P9a_b <- c(P9a, P9b)
-
-df <- df %>% 
-  mutate(q1 = rowSums(.[P1], na.rm = FALSE), # Q1&2 are Mental Health Knowledge, na.rm = FALSE means any NA in an item results in NA for the scale
-         q2 = rowSums(.[P2], na.rm = FALSE),
-         q3 = rowSums(.[P3], na.rm = FALSE), # empathy C-IRI range(0-88)
-         q3_PD = rowSums(.[P3_PD], na.rm = FALSE), # C-IRI personal distress, range(0-28) 
-         q3_FS = rowSums(.[P3_FS], na.rm = FALSE), # C-IRI fantasy scale, range(0-16)
-         q3_ES = rowSums(.[P3_ES], na.rm = FALSE), # C-IRI empathy scale, range(0-44)
-         q4 = rowSums(.[P4], na.rm = FALSE), # Empathy Quotient (EQ), range(0-44)
-         q5a = rowSums(.[P5a], na.rm = FALSE), # Emotional Competence, range(6-36)
-         q5b = rowSums(.[P5b], na.rm = FALSE), # Behavioural Competence, range(6-36)
-         q6a = rowSums(.[P6a], na.rm = FALSE), # SLSS, range(7-42)
-         q6b = rowSums(.[P6b], na.rm = FALSE), # BMSLSS, range(5-35)
-         q7 = rowSums(.[P7], na.rm = FALSE), # GHQ Psychological Distress range(0-36)
-         q8a = rowMeans(.[P8a], na.rm = FALSE), # partial compassion range(1-5), mean instead of sum
-         q8b = rowMeans(.[P8b], na.rm = FALSE), # partial self-compassion range(1-5), mean instead of sum
-         q9a_b= rowMeans(.[P9a_b], na.rm = FALSE), # help-seeking, mean instead of sum
-         q9c = rowMeans(.[P9c], na.rm = FALSE) # partial PPMI range(1-2), mean instead of sum
-  )
-
-df$q1_2 <- df$q1 + df$q2
+df <- cbind(df, scoring_level2(df))
 
 df <- subset(df, select = c(sch, imputed_sch, form, class, student_num, age, sex, 
                             q1, q2, q1_2, q3, q3_PD, q3_FS, q3_ES, q4, q5a, q5b, q6a, q6b, q7, q8a, q8b, q9a_b, q9c,
