@@ -1,0 +1,14 @@
+*
+!*/
+!*.r
+!.gitignore
+bert/functions/
+cc/archive/
+multivariate/
+!multivariate/bivariate.R
+openup/
+poverty/monograph/archive
+qtn/qtn2018-19/qtn1819_secondary/archive
+qtn/qtn2018-19/qtn1819_secondary/QTN secondary school example
+reticulate/
+!satscan.txt
