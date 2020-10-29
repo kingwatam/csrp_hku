@@ -1,9 +1,11 @@
 *
 !*/
 !*.r
+!*.rmd
 !.gitignore
 bert/functions/
 cc/archive/
+early_warning/xinyi_data
 multivariate/
 !multivariate/bivariate.R
 openup/
