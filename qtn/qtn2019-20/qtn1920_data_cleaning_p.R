@@ -44,6 +44,24 @@ df$sch[is.na(df$sch) & df$ipaddr == "210.3.102.78"] <- 11
 df$sch[is.na(df$sch) & df$ipaddr == "210.3.74.230"] <- 12
 df$imputed_sch[is.na(df$imputed_sch)] <- 0 # imputed school based on IP address
 
+df$sch <- car::recode(df$sch, "
+1 = 'KMS';
+2 =  'YKH';
+3 = 'LBC';
+4 = 'TLP';
+5 =  'CKL';
+6 = 'PTS';
+7 = 'LPM';
+8 = 'YCMC';
+9 = 'SHC';
+10 = 'SAP';
+11 = 'WSS';
+12 = 'MOSLL';
+13 = 'CYS';
+14 = 'HEP';
+15 = 'TPM'
+")
+
 df %>% select(starts_with("A01")) %>% colnames(.) -> P1a 
 df %>% select(starts_with("AC0")) %>% colnames(.) -> P1b
 df %>% select(starts_with("AB01")) %>% colnames(.) -> P2
@@ -224,3 +242,78 @@ df$grade <- as.integer(as.vector(substr(df$class,1,1)))
 names(df)[names(df)=="Q02"] <- "student_num"
 names(df)[names(df)=="Q03"] <- "dob"
 df$age <- as.numeric(floor((df$submitdate-df$dob)/365.2425))
+
+names(df)[names(df)=="Q04"] <- "sex" # female = 1; male = 2
+
+names(df)[names(df)=="Q00"] <- "sch" 
+df$sch[df$sch %in% ""] <- NA
+df$sch <- as.integer(as.vector(substr(df$sch,2,3)))
+df$imputed_sch[is.na(df$sch)] <- 1 # not missing school
+df$sch[is.na(df$sch) & df$ipaddr == "210.3.171.211"] <- 2
+df$sch[is.na(df$sch) & df$ipaddr == "202.126.220.202"] <- 3
+df$sch[is.na(df$sch) & df$ipaddr == "210.3.74.230"] <- 12
+df$imputed_sch[is.na(df$imputed_sch)] <- 0 # imputed school based on IP address
+
+df$sch <- car::recode(df$sch, "
+1 = 'KMS';
+2 =  'YKH';
+3 = 'LBC';
+4 = 'TLP';
+5 =  'CKL';
+6 = 'PTS';
+7 = 'LPM';
+8 = 'YCMC';
+9 = 'SHC';
+10 = 'SAP';
+11 = 'WSS';
+12 = 'MOSLL';
+13 = 'CYS';
+14 = 'HEP';
+15 = 'TPM'
+")
+
+# P6 (level 3) ----
+dfpre <- haven::read_sav("P6-pre-survey_450003_SPSS.sav")
+dfpost <- haven::read_sav("P6-post-survey_450006_SPSS.sav")
+
+dfpre$T1 <- 0
+dfpost$T1 <- 1
+df <- plyr::rbind.fill(dfpre, dfpost)
+rm(dfpre, dfpost)
+
+names(df)[names(df)=="Q01"] <- "class" 
+df$grade <- as.integer(as.vector(substr(df$class,1,1)))
+names(df)[names(df)=="Q02"] <- "student_num"
+names(df)[names(df)=="Q03"] <- "dob"
+df$age <- as.numeric(floor((df$submitdate-df$dob)/365.2425))
+
+names(df)[names(df)=="Q04"] <- "sex" # female = 1; male = 2
+
+names(df)[names(df)=="Q00"] <- "sch" 
+df$sch[df$sch %in% ""] <- NA
+df$sch <- as.integer(as.vector(substr(df$sch,2,3)))
+df$imputed_sch[is.na(df$sch)] <- 1 # not missing school
+df$sch[is.na(df$sch) & df$ipaddr == "210.3.171.211"] <- 2
+df$sch[is.na(df$sch) & df$ipaddr == "202.126.220.202"] <- 3
+df$sch[is.na(df$sch) & df$ipaddr == "210.176.51.222"] <- 5
+df$sch[is.na(df$sch) & df$ipaddr == "210.3.102.78"] <- 11
+df$sch[is.na(df$sch) & df$ipaddr == "210.3.74.230"] <- 12
+df$imputed_sch[is.na(df$imputed_sch)] <- 0 # imputed school based on IP address
+
+df$sch <- car::recode(df$sch, "
+1 = 'KMS';
+2 =  'YKH';
+3 = 'LBC';
+4 = 'TLP';
+5 =  'CKL';
+6 = 'PTS';
+7 = 'LPM';
+8 = 'YCMC';
+9 = 'SHC';
+10 = 'SAP';
+11 = 'WSS';
+12 = 'MOSLL';
+13 = 'CYS';
+14 = 'HEP';
+15 = 'TPM'
+")
