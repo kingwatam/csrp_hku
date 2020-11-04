@@ -588,3 +588,6 @@ scoring_level3 <- function(df){
 }
 
 df <- cbind(df, scoring_level3(df))
+
+dflevel3 <- df
+rm(df)

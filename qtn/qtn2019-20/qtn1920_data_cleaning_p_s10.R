@@ -10,12 +10,12 @@ source("helper_functions.R")
 
 library(dplyr)
 
-setwd(sprintf("~%s/qtn/qtn2019-20/primary", setpath))
+setwd(sprintf("~%s/qtn/qtn2019-20/primary/archive", setpath))
 df <- readxl::read_xls("S10-2019-20.xls")
 col_names <- data.frame( index = 15:131, name = names(df)[15:131])
 names(df)[15:131] <- 15:131
 
-names(df)[10] <- 'class' # having trouble evaluating (= or %in%) UTF-8 encoded chinese characters
+names(df)[10] <- 'class' # having trouble evaluating (= or %in%) UTF-8 encoded Chinese characters
 names(df)[11] <- 'class_number'
 names(df)[12] <- 'DoB'
 names(df)[13] <- 'sex'
