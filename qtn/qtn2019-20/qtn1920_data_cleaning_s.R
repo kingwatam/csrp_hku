@@ -1,12 +1,7 @@
 rm(list=ls())
 graphics.off()
-if (substring(getwd(),2,2) == ":") {
-  setpath <- "/MEGAsync/Work/RA HKU/CSRP"
-} else {
-  setpath <- ""
-}
-setwd(sprintf("~%s", setpath))
 source("helper_functions.R")
+setpath <- "/MEGAsync/Work/RA HKU/CSRP"
 
 library(dplyr)
 
@@ -589,5 +584,10 @@ scoring_level3 <- function(df){
 
 df <- cbind(df, scoring_level3(df))
 
+df <- subset(df, select = c(sch, imputed_sch, form, class, student_num, age, sex, 
+                            q1, q2, q1_2, q3, q3_PD, q3_FS, q3_ES, q5a, q5b, q6a2, q6b, q7, q8a, q8b, q9a_b, q9c,
+                            control, submitdate, dob, T1, intervention, level))
+
 dflevel3 <- df
 rm(df)
+

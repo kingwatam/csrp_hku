@@ -1,12 +1,7 @@
 rm(list=ls())
 graphics.off()
-if (substring(getwd(),2,2) == ":") {
-  setpath <- "/MEGAsync/Work/RA HKU/CSRP"
-} else {
-  setpath <- ""
-}
-setwd(sprintf("~%s", setpath))
 source("helper_functions.R")
+setpath <- "/MEGAsync/Work/RA HKU/CSRP"
 
 library(dplyr)
 
@@ -17,6 +12,10 @@ SCHOOL <- array(c(c("primary", "secondary"),                      # switch betwe
                   c("primary_selective", "secondary_selective")), # switch between selective primary schools [1,2] & selective secondary schools [2,2]
                 dim=c(2,2))                                         [2,1] # <- switch here
 
+setwd(sprintf("~%s/qtn/qtn2019-20/qtn1920_%s", setpath, substring(SCHOOL, 1, regexpr("ary", SCHOOL)+2)))
+df <- readRDS(sprintf("qtn1920_%s_long.rds", SCHOOL))
+
+# legacy code ----
 setwd(sprintf("~%s/qtn/qtn2018-19/qtn1819_%s", setpath, substring(SCHOOL, 1, regexpr("ary", SCHOOL)+2)))
 df1819 <- readRDS(sprintf("qtn1819_%s_long.rds", SCHOOL))
 

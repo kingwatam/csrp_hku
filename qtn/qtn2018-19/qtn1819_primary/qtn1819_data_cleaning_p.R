@@ -12,38 +12,26 @@ library(descr) #  freq(as.ordered())
 # library(tidyverse) # includes dplyr package
 library(dplyr) # filter() recode()
 
-# library(readxl)
-# mydata <- read_excel("MEGAsync/Work and Resume/RA HKU/CSRP/qtn2018-19/qtn1819_primary/Data_Universal_coded_workingfile.xlsx")
-
 setwd(sprintf("~%s/qtn/qtn2018-19/qtn1819_primary", setpath))
 
 df <- openxlsx::read.xlsx("Data_Universal_coded_workingfile.xlsx")
 n_raw <- nrow(df)
 
-# library(readxl)
-# df <- read_excel("Data_Universal_coded_workingfile.xlsx")
-
-# names(df)
 df <- subset(df, select = c(id, ipaddr, Q01, Q02, Q03, Q04, submitdate, School.Code, `Pre_Ass1-P1-Total`,
                             `Pre_Ass1-P2-Happiness_Total`, `Pre_Ass1-P3-Total`, `Pre_Ass1-P4_-ve.thoughts`,
                             `Pre_Ass1-P4_+ve.thoughts`, `Pre_Ass1-P5-Total`, `Pre_Ass1-P6-Total`,
                             `Pre_Ass1-P7-Total`))
 
-#table(df$q1) is equiv. to table(df[q1])
-
 # # find column in df
 # which(colnames(df)=="q7") or match("q7",names(df))
 
-# library(pastecs)
-# round(stat.desc(df['Q03'],basic=TRUE, desc=TRUE, norm=FALSE),2)
 names(df)[names(df)=="Q01"] <- "class" 
 names(df)[names(df)=="Q02"] <- "student_num"
-# attach(df) # detach(df)
 df$Q03 <- openxlsx::convertToDateTime(df$Q03)
 names(df)[names(df)=="Q03"] <- "dob"
 df$submitdate <- convertToDateTime(df$submitdate)
 
-names(df)[names(df)=="Q04"] <- "sex" # rename instead of creating a new variable: df$sex <- Q04
+names(df)[names(df)=="Q04"] <- "sex" 
 
 df$age <- as.numeric(floor((df$submitdate-df$dob)/365.2425))
 
@@ -76,8 +64,6 @@ df$dob[df$id==6566] <- "2008-01-11" # change DOB of id 6566 to the same as id 17
 
 df$control_paste <- ifelse(!is.na(df$sch), paste(df$sch, df$grade), NA)
 df$control <- ifelse(!is.na(df$sch), 1, NA)
-# create new variable with repetition of 1 for n number of rows
-# df$new <- rep(1,nrow(df))
 
 df$control[df$control_paste %in% c('1 5',
                                    '2 4',

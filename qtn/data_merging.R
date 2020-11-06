@@ -274,7 +274,6 @@ names(dfDMS)[names(dfDMS) %in% c(qA1, qA2, qB, qC, qD1, qD2, qE, qF)] <-
 
 var_names <-   names(df)[names(df) %in% c(P1, P2, P3, P4, P5a, P5b, P6, P7)] # save variable names for 2017-18 data
 
-
 dfDMS <- subset(dfDMS, select = c("sch", "form", "class", "student_num", "age", "sex", 
                                   P1, P2, P3, P4, P5a, P5b, P6, P7,
                                   "q1", "q2", "q1_2", "q3", "q4pos", "q4neg", "q5a", "q5b", "q6", "q7", 
@@ -298,7 +297,6 @@ df$sch <- car::recode(df$sch, "
 1 = 'YLCSS';
 2 =  'LWLC';
 3 = 'MHLSS';
-
 5 =  'TKP';
 6 = 'LSK';
 7 = 'LSC';
@@ -363,7 +361,7 @@ df <- subset(temp, select = c("sch", "form", "class", "student_num", "age", "sex
                                 "control", "submitdate", "dob", "T1", "intervention"))
 rm(temp)
 
-# recalculate age due to old dataset using submitdate instead
+# recalculate age due to old dataset using submitdate as reference
 df$age <- as.numeric(floor((as.Date("2019-06-30")-as.Date(df$dob))/365.2425))
 
 df <- df[order(df$submitdate),]
