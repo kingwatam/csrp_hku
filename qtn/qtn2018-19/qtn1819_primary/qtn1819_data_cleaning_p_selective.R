@@ -33,38 +33,46 @@ df_S03 <- df_S03[,-(7:12)] # remove unused date columns
 df <- plyr::rbind.fill(df, df_S03)
 
 # Outcome scoring ----
-df %>% select(starts_with("AB")) %>% colnames(.) -> qA 
-df %>% select(starts_with("P2")) %>% colnames(.) -> qB # Positive & Negative Affect (PANAS) range()
-df %>% select(starts_with("E0")) %>% colnames(.) -> qC # Self-esteem (RSES) 
-df %>% select(starts_with("P4")) %>% colnames(.) -> qD
-qD1 <- qD[1:8]
-qD2 <- qD[9:22]
-df %>% select(starts_with("C0")) %>% colnames(.) -> qE
+scoring <- function(df){
+  df %>% select(starts_with("AB")) %>% colnames(.) -> qA 
+  df %>% select(starts_with("P2")) %>% colnames(.) -> qB # Positive & Negative Affect (PANAS) range()
+  df %>% select(starts_with("E0")) %>% colnames(.) -> qC # Self-esteem (RSES) 
+  df %>% select(starts_with("P4")) %>% colnames(.) -> qD
+  qD1 <- qD[1:8]
+  qD2 <- qD[9:22]
+  df %>% select(starts_with("C0")) %>% colnames(.) -> qE
+  
+  questions <- c(qA, qB, qC, qD, qE)
+  
+  reverse_qA <- qA[c(4)] 
+  df[reverse_qA] <- (df[reverse_qA]-8)*-1 # reverse (1:7) to (7:1)
+  
+  reverse_qB <- qB[c(2, 4, 6, 7, 8, 11, 13, 15, 18, 20)] # Negative Affect questions
+  
+  reverse_qC <- qC[c(2, 5, 6, 8, 9)]
+  df[reverse_qC] <- (df[reverse_qC]-5)*-1 # reverse (1:4) to (4:1)
+  
+  reverse_qD1 <- qD1[c(2)]
+  df[reverse_qD1] <- (df[reverse_qD1]-8)*-1 # reverse (1:7) to (7:1)
+  
+  reverse_qE <- qE[c(1, 3, 5, 7, 9, 11, 13, 15, 17, 19)] # Negative thinking
+  
+  df <- df %>% 
+    mutate(q1 = rowSums(.[qA], na.rm = FALSE), # Subjective Happiness (SHS) range(4-28)
+           q2neg = rowSums(.[reverse_qB], na.rm = FALSE),# Negative Affect (PANAS) range(10-50)
+           q2pos = rowSums(.[qB[!(qB %in% reverse_qB)]], na.rm = FALSE), # Positive Affect (PANAS) range(10-50)
+           q3 = rowSums(.[qC], na.rm = FALSE),# Self-esteem (RSES) range(10-40)
+           q4a = rowSums(.[qD1], na.rm = FALSE), # Strengths Knowledge Scale (SKS) range(8-56)
+           q4b = rowSums(.[qD2], na.rm = FALSE), # Strengths Use Scale (SUS) range(14-98)
+           q5neg = rowSums(.[reverse_qE], na.rm = FALSE),  # Negative Thinking (CATS-N/P) range(0-40)
+           q5pos = rowSums(.[qE[!(qE %in% reverse_qE)]], na.rm = FALSE))  # Positive Thinking (CATS-N/P) range(0-40)
+  
+  return(subset(df, select = c(q1, q2neg, q2pos, q3, q4a, q4b, q5neg, q5pos
+  )))
+}
 
-questions <- c(qA, qB, qC, qD, qE)
+df <- cbind(df, scoring(df))
 
-reverse_qA <- qA[c(4)] 
-df[reverse_qA] <- (df[reverse_qA]-8)*-1 # reverse (1:7) to (7:1)
-
-reverse_qB <- qB[c(2, 4, 6, 7, 8, 11, 13, 15, 18, 20)] # Negative Affect questions
-
-reverse_qC <- qC[c(2, 5, 6, 8, 9)]
-df[reverse_qC] <- (df[reverse_qC]-5)*-1 # reverse (1:4) to (4:1)
-
-reverse_qD1 <- qD1[c(2)]
-df[reverse_qD1] <- (df[reverse_qD1]-8)*-1 # reverse (1:7) to (7:1)
-
-reverse_qE <- qE[c(1, 3, 5, 7, 9, 11, 13, 15, 17, 19)] # Negative thinking
-
-df <- df %>% 
-  mutate(q1 = rowSums(.[qA], na.rm = FALSE), # Subjective Happiness (SHS) range(4-28)
-         q2neg = rowSums(.[reverse_qB], na.rm = FALSE),# Negative Affect (PANAS) range(10-50)
-         q2pos = rowSums(.[qB[!(qB %in% reverse_qB)]], na.rm = FALSE), # Positive Affect (PANAS) range(10-50)
-         q3 = rowSums(.[qC], na.rm = FALSE),# Self-esteem (RSES) range(10-40)
-         q4a = rowSums(.[qD1], na.rm = FALSE), # Strengths Knowledge Scale (SKS) range(8-56)
-         q4b = rowSums(.[qD2], na.rm = FALSE), # Strengths Use Scale (SUS) range(14-98)
-         q5neg = rowSums(.[reverse_qE], na.rm = FALSE),  # Negative Thinking (CATS-N/P) range(0-40)
-         q5pos = rowSums(.[qE[!(qE %in% reverse_qE)]], na.rm = FALSE))  # Positive Thinking (CATS-N/P) range(0-40)
 
 # Data cleaning ----
 names(df)[names(df)=="Q00"] <- "sch"
@@ -166,8 +174,14 @@ df$control <- ifelse(df$intervention, 0, 1)
 
 # output dataframe ----
 setwd(sprintf("~%s/qtn/qtn2018-19/qtn1819_primary", setpath))
-saveRDS(df, file = "qtn1819_primary_selective_long.rds")
+
 # write_excel("qtn1819_primary_selective_long.xlsx", df[])
+
+df <- subset(df, select = c(sch, grade, class, student_num, age, sex, 
+                            q1, q2neg, q2pos, q3, q4a, q4b, q5neg, q5pos,
+                            control, submitdate, dob, T1, intervention))
+
+saveRDS(df, file = "qtn1819_primary_selective_long.rds")
 
 df_pre <- df[df$T1==0,]
 df_pre$T1 <- NULL

@@ -17,7 +17,6 @@ dfpost$T1 <- 1
 df <- rbind(dfpre, dfpost)
 rm(dfpre, dfpost)
 
-
 temp = list.files(pattern="*.xlsx")
 for (i in 1:length(temp)){
   assign(paste0(substring(temp[i], regexpr("dataentry_", temp[i])+10, regexpr("\\.xlsx", temp[i])-1), "_pre"), openxlsx::read.xlsx(temp[i], sheet = "Pre"))
@@ -208,89 +207,97 @@ df$A01_2[df$A01_2 == 98] <- NA
 df$intervention <- ifelse(df$intervention=="INV", 1, 0)
 df$control <- ifelse(df$intervention, 0, 1)
 
+df$sch <- as.numeric(df$sch)
+df$T1 <- as.numeric(df$T1)
+
 # Outcome Scoring ----
-qA_PD <- qA[c(3, 6, 9, 13, 15, 18, 21)] # personal distress, range(0-28) 
-qA_FS <- qA[c(2, 8, 12, 20)] # fantasy scale, range(0-16)
-qA_ES <- qA[c(1, 4, 5, 7, 10, 11, 14, 16, 17, 19, 22)] # empathy scale, range(0-44)
+scoring <- function(df){
+  qA_PD <- qA[c(3, 6, 9, 13, 15, 18, 21)] # personal distress, range(0-28) 
+  qA_FS <- qA[c(2, 8, 12, 20)] # fantasy scale, range(0-16)
+  qA_ES <- qA[c(1, 4, 5, 7, 10, 11, 14, 16, 17, 19, 22)] # empathy scale, range(0-44)
+  
+  # qA_PD2 <- qA[c(3, 6, 9, 13, 15)] # personal distress, range(0-20) 
+  # qA_FS2 <- qA[c(2, 8, 12)] # fantasy scale, range(0-12)
+  # qA_ES2 <- qA[c(1, 4, 5, 7, 10, 11, 14, 16)] # empathy scale, range(0-32)
+  
+  reverse_qA <- qA[c(8, 9, 10, 11, 14)] 
+  # reverse scores (original labels no longer apply to these)
+  df[reverse_qA] <- (df[reverse_qA]-4)*-1  # reverse (0,1,2,3,4) to (4,3,2,1,0)
+  
+  df <- df %>% 
+    mutate(A_PD = rowSums(.[qA_PD], na.rm = FALSE),
+           A_FS = rowSums(.[qA_FS], na.rm = FALSE),
+           A_ES = rowSums(.[qA_ES], na.rm = FALSE))
+  
+  df$A_PD[is.na(df$A01_17)] <- NA # missing answers to questions 17-22 from part 1/A (A01_17 to A01_22)
+  df$A_FS[is.na(df$A01_17)] <- NA
+  df$A_ES[is.na(df$A01_17)] <- NA
+  
+  #              N   Mean       Median     SD        Min        Max    
+  # A_PD         149 15.10738   15         4.760679  2          25        
+  # A_FS         149 8.496644   8          2.677797  0          15        
+  # A_ES         149 25.63087   26         4.520746  11         36   
+  
+  # df <- df %>% 
+  #   mutate(A_PD2 = rowSums(.[qA_PD2], na.rm = FALSE),
+  #          A_FS2 = rowSums(.[qA_FS2], na.rm = FALSE),
+  #          A_ES2 = rowSums(.[qA_ES2], na.rm = FALSE))
+  
+  # eval(parse(text =
+  #              sprintf("df$%s <- df$%s %s", 
+  #                      c("A_PD", "A_FS", "A_ES"), 
+  #                      c("A_PD2", "A_FS2", "A_ES2"),
+  #                      c("/5*7", "/3*4", "/8*11")) # 5/7, 3/4, 8/11
+  # ))
+  
+  # eval(parse(text =
+  #              sprintf("df$%s[is.na(df$A01_17)] <- df$%s[is.na(df$A01_17)] %s",
+  #                      c("A_PD", "A_FS", "A_ES"),
+  #                      c("A_PD", "A_FS", "A_ES"),
+  #                      c("/5*7", "/3*4", "/8*11")) # 5/7, 3/4, 8/11
+  # ))
+  #              N   Mean       Median     SD        Min        Max   
+  # A_PD         198 15.56869   16         4.609946  2          28        
+  # A_FS         198 8.69697    9          2.590316  0          15        
+  # A_ES         198 25.6351    26         4.375577  11         36  
+  
+  reverse_qB <- qB[c(3, 4, 5, 7, 11, 17)]  # note that original values 1 = strongly agree, 4 = strongly disagree
+  
+  df[qB[!(qB %in% reverse_qB)]] <- lapply(df[qB[!(qB %in% reverse_qB)]], function(x) plyr::mapvalues(x, c(1,2,3,4), c(2,1,0,0))) # convert (1,2,3,4) to (2,1,0,0)
+  df[reverse_qB] <- lapply(df[reverse_qB], function(x) plyr::mapvalues(x, c(1,2,3,4), c(0,0,1,2))) # convert (1,2,3,4) to (0,0,1,2)
+  
+  reverse_qC2 <- qC2[c(6)] # 12th question in qC which is the 6th question in qC2
+  df[reverse_qC2] <- (df[reverse_qC2]-7)*-1 # reverse (1:6) to (6:1)
+  
+  reverse_qD1 <- qD1[c(3, 4)]
+  df[reverse_qD1] <- (df[reverse_qD1]-7)*-1 # reverse (1:6) to (6:1)
+  
+  reverse_qE <- qE[c(1, 3, 4, 7, 8, 12)]
+  df[reverse_qE] <- (df[reverse_qE]-5)*-1 # reverse (1:4) to (4:1)
+  df[qE] <- df[qE]-1 # convert (1:4) to (0:3)
+  
+  df <- df %>% 
+    mutate(B01 = rowSums(.[qB], na.rm = FALSE), # Empathy Quotient, range(0-44)
+           C01 = rowSums(.[qC1], na.rm = FALSE), # Emotional Competence, range(6-36)
+           C02 = rowSums(.[qC2], na.rm = FALSE), # Behavioural Competence, range(6-36)
+           D01 = rowSums(.[qD1], na.rm = FALSE), # SLSS, range(7-42)
+           D02 = rowSums(.[qD2], na.rm = FALSE), # BMSLSS, range(5-35)
+           E01 = rowSums(.[qE], na.rm = FALSE)) # GHQ, range(0-36)
+  
+  return(subset(df, select = c(A_PD, A_FS, A_ES, B01, C01, C02, D01, D02, E01
+  )))
+}
 
-# qA_PD2 <- qA[c(3, 6, 9, 13, 15)] # personal distress, range(0-20) 
-# qA_FS2 <- qA[c(2, 8, 12)] # fantasy scale, range(0-12)
-# qA_ES2 <- qA[c(1, 4, 5, 7, 10, 11, 14, 16)] # empathy scale, range(0-32)
+df <- cbind(df, scoring(df))
 
-reverse_qA <- qA[c(8, 9, 10, 11, 14)] 
-# reverse scores (original labels no longer apply to these)
-df[reverse_qA] <- (df[reverse_qA]-4)*-1  # reverse (0,1,2,3,4) to (4,3,2,1,0)
-
-df <- df %>% 
-  mutate(A_PD = rowSums(.[qA_PD], na.rm = FALSE),
-         A_FS = rowSums(.[qA_FS], na.rm = FALSE),
-         A_ES = rowSums(.[qA_ES], na.rm = FALSE))
-
-df$A_PD[is.na(df$A01_17)] <- NA # missing answers to questions 17-22 from part 1/A (A01_17 to A01_22)
-df$A_FS[is.na(df$A01_17)] <- NA
-df$A_ES[is.na(df$A01_17)] <- NA
-
-#              N   Mean       Median     SD        Min        Max    
-# A_PD         149 15.10738   15         4.760679  2          25        
-# A_FS         149 8.496644   8          2.677797  0          15        
-# A_ES         149 25.63087   26         4.520746  11         36   
-
-# df <- df %>% 
-#   mutate(A_PD2 = rowSums(.[qA_PD2], na.rm = FALSE),
-#          A_FS2 = rowSums(.[qA_FS2], na.rm = FALSE),
-#          A_ES2 = rowSums(.[qA_ES2], na.rm = FALSE))
-
-# eval(parse(text =
-#              sprintf("df$%s <- df$%s %s", 
-#                      c("A_PD", "A_FS", "A_ES"), 
-#                      c("A_PD2", "A_FS2", "A_ES2"),
-#                      c("/5*7", "/3*4", "/8*11")) # 5/7, 3/4, 8/11
-# ))
-
-# eval(parse(text =
-#              sprintf("df$%s[is.na(df$A01_17)] <- df$%s[is.na(df$A01_17)] %s",
-#                      c("A_PD", "A_FS", "A_ES"),
-#                      c("A_PD", "A_FS", "A_ES"),
-#                      c("/5*7", "/3*4", "/8*11")) # 5/7, 3/4, 8/11
-# ))
-#              N   Mean       Median     SD        Min        Max   
-# A_PD         198 15.56869   16         4.609946  2          28        
-# A_FS         198 8.69697    9          2.590316  0          15        
-# A_ES         198 25.6351    26         4.375577  11         36  
-
-reverse_qB <- qB[c(3, 4, 5, 7, 11, 17)]  # note that original values 1 = strongly agree, 4 = strongly disagree
-
-df[qB[!(qB %in% reverse_qB)]] <- lapply(df[qB[!(qB %in% reverse_qB)]], function(x) plyr::mapvalues(x, c(1,2,3,4), c(2,1,0,0))) # convert (1,2,3,4) to (2,1,0,0)
-df[reverse_qB] <- lapply(df[reverse_qB], function(x) plyr::mapvalues(x, c(1,2,3,4), c(0,0,1,2))) # convert (1,2,3,4) to (0,0,1,2)
-
-reverse_qC2 <- qC2[c(6)] # 12th question in qC which is the 6th question in qC2
-df[reverse_qC2] <- (df[reverse_qC2]-7)*-1 # reverse (1:6) to (6:1)
-
-reverse_qD1 <- qD1[c(3, 4)]
-df[reverse_qD1] <- (df[reverse_qD1]-7)*-1 # reverse (1:6) to (6:1)
-
-reverse_qE <- qE[c(1, 3, 4, 7, 8, 12)]
-df[reverse_qE] <- (df[reverse_qE]-5)*-1 # reverse (1:4) to (4:1)
-df[qE] <- df[qE]-1 # convert (1:4) to (0:3)
-
-df <- df %>% 
-  mutate(B01 = rowSums(.[qB], na.rm = FALSE), # Empathy Quotient, range(0-44)
-         C01 = rowSums(.[qC1], na.rm = FALSE), # Emotional Competence, range(6-36)
-         C02 = rowSums(.[qC2], na.rm = FALSE), # Behavioural Competence, range(6-36)
-         D01 = rowSums(.[qD1], na.rm = FALSE), # SLSS, range(7-42)
-         D02 = rowSums(.[qD2], na.rm = FALSE), # BMSLSS, range(5-35)
-         E01 = rowSums(.[qE], na.rm = FALSE)) # GHQ, range(0-36)
-
+setwd(sprintf("~%s/qtn/qtn2018-19/qtn1819_secondary", setpath))
+write_excel("qtn1819_secondary_selective_long.xlsx", df[])
 
 df <- select(df, c(online, sch, T1, intervention, control,  class, form, student_num, sex, submitdate, dob, age,
                    A_PD, A_FS, A_ES,
                    B01, C01, C02, D01, D02, E01))
 
-df$sch <- as.numeric(df$sch)
-df$T1 <- as.numeric(df$T1)
-
 # saving long format ----
-
 setwd(sprintf("~%s/qtn/qtn2018-19/qtn1819_secondary", setpath))
 df$online <- NULL
 saveRDS(df, file = "qtn1819_secondary_selective_long.rds")
