@@ -8,10 +8,12 @@ if (substring(getwd(),2,2) == ":") {
 setwd(sprintf("~%s", setpath))
 source("helper_functions.R")
 
-library(dplyr)
-library(ggplot2)
-library(lme4)
-library(ggpubr) # ggarrange
+library(dplyr, quietly = TRUE)
+library(ggplot2, quietly = TRUE)
+library(lme4, quietly = TRUE)
+library(lmerTest, quietly = TRUE) # calculate p-values in summary()
+library(multcomp, quietly = TRUE) # glht
+library(ggpubr, quietly = TRUE) # ggarrange
 
 setwd(sprintf("~%s/qtn/", setpath))
 df <- readRDS("qtn1519_secondary_long.rds")
@@ -491,7 +493,7 @@ for (wave in c(1, 2, 3, 4)){
         names(data)[names(data)=="SE_2"] <- "se"
       }
       percent_CI <- 0.84 # 84% percentile CI (ref: https://rstudio-pubs-static.s3.amazonaws.com/132971_a902bb2b962b407e9e9436559c6f5d36.html)
-      data[, "ci"] <- data[, "se"] * qnorm(1-((1-percent_CI)/2)) 
+      data[, "ci"] <- data[, "se"] * qnorm(1-((1-percent_CI)/2)) # z dist is used, but could use t-dist qt(1-((1-percent_CI)/2), n-1)
       data[, "ymax"] <- data[, "estimate"] + data[, "ci"]
       data[, "ymin"] <- data[, "estimate"] - data[, "ci"]
       data <- data[order(data[, "estimate"]),]
@@ -571,32 +573,31 @@ for (wave in c(3:4)){
         # between-group
         beta1 <- iferror(summary(fit)$coef[paste0("sch", sch_j, ":T1:intervention"), 1],
                            summary(fit)$coef[paste0("sch", sch_i, ":T1:intervention"), 1])
-        t_value1 <- iferror(summary(fit)$coef[paste0("sch", sch_j, ":T1:intervention"), 3],
-                           summary(fit)$coef[paste0("sch", sch_i, ":T1:intervention"), 3])
-        p_value1 <- (1-pnorm(abs(t_value1)))*2
+        p_value1 <- summary(fit)$coef[paste0("sch", sch_i, ":T1:intervention"), 5] # summary is augmented by loading lmerTest package
         
-
         # control group
         beta2 <- iferror(summary(fit)$coef[paste0("sch", sch_j, ":T1"), 1],
                            summary(fit)$coef[paste0("sch", sch_i, ":T1"), 1])
-        t_value2 <- iferror(summary(fit)$coef[paste0("sch", sch_j, ":T1"), 3],
-                           summary(fit)$coef[paste0("sch", sch_i, ":T1"), 3])
-        p_value2 <- (1-pnorm(abs(t_value2)))*2
+        p_value2 <- summary(fit)$coef[paste0("sch", sch_i, ":T1"), 5] # summary is augmented by loading lmerTest package
         
         # intervention group
-        beta3 <- iferror(summary(fit)$coef[paste0("sch", sch_j, ":T1"), 1] + summary(fit)$coef[paste0("sch", sch_j, ":T1:intervention"), 1],
-                           summary(fit)$coef[paste0("sch", sch_i, ":T1"), 1] + summary(fit)$coef[paste0("sch", sch_i, ":T1:intervention"), 1])
-
-        vcov_A <- iferror(vcov(fit)[paste0("sch", sch_j, ":T1"), paste0("sch", sch_j, ":T1")],
-                          vcov(fit)[paste0("sch", sch_i, ":T1"), paste0("sch", sch_i, ":T1")])
-        vcov_B <- iferror(vcov(fit)[paste0("sch", sch_j, ":T1:intervention"), paste0("sch", sch_j, ":T1:intervention")],
-                          vcov(fit)[paste0("sch", sch_i, ":T1:intervention"), paste0("sch", sch_i, ":T1:intervention")])
-        vcov_AB <- iferror(vcov(fit)[paste0("sch", sch_j, ":T1"), paste0("sch", sch_j, ":T1:intervention")],
-                          vcov(fit)[paste0("sch", sch_i, ":T1"), paste0("sch", sch_i, ":T1:intervention")])
-        SE <-  sqrt(vcov_A + vcov_B + 2* vcov_AB)
-        t_value3 <- beta3/SE
-        p_value3 <- (1-pnorm(abs(t_value3)))*2
-
+        # beta3 <- iferror(summary(fit)$coef[paste0("sch", sch_j, ":T1"), 1] + summary(fit)$coef[paste0("sch", sch_j, ":T1:intervention"), 1],
+        #                    summary(fit)$coef[paste0("sch", sch_i, ":T1"), 1] + summary(fit)$coef[paste0("sch", sch_i, ":T1:intervention"), 1])
+        # 
+        # vcov_A <- iferror(vcov(fit)[paste0("sch", sch_j, ":T1"), paste0("sch", sch_j, ":T1")],
+        #                   vcov(fit)[paste0("sch", sch_i, ":T1"), paste0("sch", sch_i, ":T1")])
+        # vcov_B <- iferror(vcov(fit)[paste0("sch", sch_j, ":T1:intervention"), paste0("sch", sch_j, ":T1:intervention")],
+        #                   vcov(fit)[paste0("sch", sch_i, ":T1:intervention"), paste0("sch", sch_i, ":T1:intervention")])
+        # vcov_AB <- iferror(vcov(fit)[paste0("sch", sch_j, ":T1"), paste0("sch", sch_j, ":T1:intervention")],
+        #                   vcov(fit)[paste0("sch", sch_i, ":T1"), paste0("sch", sch_i, ":T1:intervention")])
+        # SE <-  sqrt(vcov_A + vcov_B + 2* vcov_AB)
+        # t_value3 <- beta3/SE
+        # p_value3 <- (1-pnorm(abs(t_value3)))*2 # delta method should use z dist instead of t dist (ref: https://stats.stackexchange.com/questions/333445/degrees-of-freedom-for-t-test-after-delta-method)
+        outputs <- iferror(glht(fit, linfct = paste0("sch", sch_j, ":T1", " + ", "sch", sch_j, ":T1:intervention", " == 0"))  %>% summary(), 
+                            glht(fit, linfct = paste0("sch", sch_i, ":T1", " + ", "sch", sch_i, ":T1:intervention", " == 0"))  %>% summary())
+        beta3 <- outputs$test$coefficients[1]
+        p_value3 <- outputs$test$pvalues[1] # alternative method using contrast statements & glht
+                          
         sch_list <- c(sch_i, sch_j)
         sch_col <- rownames(summary(fit)$coef)[3] %>% substr(., 4, nchar(.))
         sch_row <- sch_list[!(sch_list %in% sch_col)]
