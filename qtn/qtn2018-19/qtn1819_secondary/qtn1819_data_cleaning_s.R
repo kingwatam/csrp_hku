@@ -213,7 +213,7 @@ rm(dfDMS)
 
 n_final <- nrow(df)
 saveRDS(df, file = "qtn1819_secondary_long.rds")
-# write_excel("qtn1819_secondary_long.xlsx", df[])
+# write_excel("qtn1819_secondary_long.xlsx", df)
 
 # selective program for 2019-2020 ----
 df_se <- df %>% # selective
