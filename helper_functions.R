@@ -407,5 +407,6 @@ import_func <- function(R_file){
 # robust SEs for lm()
 # import the function from repository
 url_robust <- "https://raw.githubusercontent.com/IsidoreBeautrelet/economictheoryblog/master/robust_summary.R"
-eval(parse(text = RCurl::getURL(url_robust, ssl.verifypeer = FALSE)),
+text_file <- httr::content(httr::GET(url_robust), "text")
+eval(parse(text = text_file),
      envir=.GlobalEnv)
