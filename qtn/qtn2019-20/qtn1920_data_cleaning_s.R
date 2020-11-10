@@ -1,9 +1,10 @@
 rm(list=ls())
 graphics.off()
-source("helper_functions.R")
 setpath <- "/MEGAsync/Work/RA HKU/CSRP"
+setwd(sprintf("~%s", setpath))
+source("helper_functions.R")
 
-library(dplyr)
+library(dplyr, quietly = TRUE)
 
 # level 1 ----
 setwd(sprintf("~%s/qtn/qtn2019-20/secondary", setpath))
@@ -237,6 +238,8 @@ scoring_level1 <- function(df){
 
 df <- cbind(df, scoring_level1(df))
 
+level1 <- df
+
 df <- subset(df, select = c(sch, imputed_sch, form, class, student_num, age, sex,
                                   q1, q2, q1_2, q3, q4neg, q4pos, q5a, q5a2, q5b, q6, q7, q8a, q8b, q9a_b, q9c,
                                   control, submitdate, dob, T1, intervention, level))
@@ -351,11 +354,11 @@ df$level <- 2
 df <- convert2NA(df, c(""))
 df$age <- as.numeric(floor((as.Date("2020-06-30")-as.Date(df$dob))/365.2425))
 
-df$intervention <- ifelse( (df$sch == "LHKSS" & df$form == 2) | # intervention group
-                             (df$sch == "MKES" & df$form == 1) |
-                             (df$sch == "LWLC" & df$form == 2) |
-                             (df$sch == "LSC" & df$form == 2) |
-                             (df$sch == "CWSFMSS" & df$form == 3), 1, NA) # no control group for level 2 this year
+df$intervention <- ifelse( (df$sch %in% "LHKSS" & df$form %in% 2) | # intervention group
+                             (df$sch %in% "MKES" & df$form %in% 1) |
+                             (df$sch %in% "LWLC" & df$form %in% 2) |
+                             (df$sch %in% "LSC" & df$form %in% 2) |
+                             (df$sch %in% "CWSFMSS" & df$form %in% 3), 1, NA) # no control group for level 2 this year
 df$control <- ifelse(df$intervention, 0, 1)
 
 scoring_level2 <- function(df){
@@ -456,6 +459,8 @@ scoring_level2 <- function(df){
 
 df <- cbind(df, scoring_level2(df))
 
+level2 <- df
+
 df <- subset(df, select = c(sch, imputed_sch, form, class, student_num, age, sex, 
                             q1, q2, q1_2, q3, q3_PD, q3_FS, q3_ES, q4, q5a, q5b, q6a, q6a2, q6b, q7, q8a, q8b, q9a_b, q9c,
                             control, submitdate, dob, T1, intervention, level))
@@ -473,6 +478,7 @@ dfpost$T1 <- 1
 
 df <- dfpost
 rm(dfpost)
+df$level <- 3
 
 names(df)[names(df)=='Q01'] <- 'form' 
 names(df)[names(df)=='Q02'] <- 'student_num'
@@ -584,10 +590,16 @@ scoring_level3 <- function(df){
 
 df <- cbind(df, scoring_level3(df))
 
-df <- subset(df, select = c(sch, imputed_sch, form, class, student_num, age, sex, 
+level3 <- df
+
+df <- subset(df, select = c(sch, form, class, student_num, age, sex, 
                             q1, q2, q1_2, q3, q3_PD, q3_FS, q3_ES, q5a, q5b, q6a2, q6b, q7, q8a, q8b, q9a_b, q9c,
                             control, submitdate, dob, T1, intervention, level))
 
 dflevel3 <- df
 rm(df)
 
+saveRDS(dflevel1, file = "qtn1920_secondary_level1.rds")
+saveRDS(dflevel2, file = "qtn1920_secondary_level2.rds")
+saveRDS(dflevel3, file = "qtn1920_secondary_level3.rds")  
+# write_excel("qtn1920_secondary.xlsx", level1, level2, level3)
