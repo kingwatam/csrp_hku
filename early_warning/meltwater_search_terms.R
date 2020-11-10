@@ -1,5 +1,5 @@
-((撒瑪利亞防止自殺會 or 醫院管理局精神健康專線 or 18288 or【珍惜生命】or 
-           撿獲遺書 or 因病厭世) 
+((撒瑪利亞防止自殺會 or 醫院管理局精神健康專線 or 18288 or【珍惜生命】
+           or 撿獲遺書 or 因病厭世) 
   and (尋死 or 自尋短見 or 企跳 or 自盡 or 自殺 or 輕生 or 自殘 or 檢獲遺書 or 
          同歸於盡 or 殉情 or 死念 or 浮屍 or 氦氣 or 膠袋笠頭 or 
          上吊 or 企圖 or 燒炭 or 自焚 or 自溺 or 自刎 or 
@@ -12,7 +12,7 @@
          氣絕 or 送院 or 報警 or 消防 or 警方 or 水警 or 報案 or 
          接報 or 救援 or 飲藥 or 食藥 or 毒氣 or 氣袋)
   not (當地傳媒 or 兩岸頭條 or 國際 or 國際頭條 or 國際突發 or 國際新聞 or 氣候變化 or 當地 or 新華社 or 內地傳媒 or 廣州日報 or 
-           台灣 or 新北市 or 南韓 or 韓國 or 首爾 or 北韓 or 日本 or 阿富汗 or 黎巴嫩 or 內蒙 or 比利時 or 伊朗 or 
+           台灣 or 新北市 or 南韓 or 韓國 or 首爾 or 北韓 or 日本 or 阿富汗 or 黎巴嫩 or 內蒙 or 比利時 or 伊朗 or 深圳 or
            法國 or 阿富汗 or 英超 or 俄羅斯 or 荷蘭 or 花蓮 or 英國 or 美國 or 特朗普 or 河南 or 台北 or 歐洲 or 
            倫敦 or 墨西哥 or 台中 or 泰國 or 國際專題 or 澳洲 or 珠海 or 敘利亞 or 波士頓 or 聯合國 or 巴黎 or 
            桑吉輪 or 南非 or 普京 or 瑞士 or 耶城 or 以色列 or 孟加拉 or 貴州 or 大阪 or 東京 or 新西蘭 or 紐西蘭 or 
