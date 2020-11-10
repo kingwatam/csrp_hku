@@ -298,6 +298,7 @@ get_lm <- function(df, question, question_name = "Question", school = NULL, wide
 }
 
 get_lme <- function(df, question, question_name = "Question", school = NULL, wide_format = FALSE, multilevel_lvls = "1 | uid"){
+  require(nlme)
   table  <-  data.frame(matrix(ncol = 3,  nrow = 0))
   
   table[1,1] <- question_name
@@ -1264,6 +1265,7 @@ rm(int_ctrl, full_sch_id, full_wide_sch)
 
 # FDR correction ----
 reg_table <- function(data, within_group = FALSE, random_effect = '1 + T1 | sch/uid'){
+  require(nlme)
   table <- data.frame(matrix(ncol = 10,  nrow = 0))
   row_count <- 1
   for (dep_var in questions[,1]){
