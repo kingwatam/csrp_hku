@@ -108,10 +108,10 @@ tab2 <- function(data, .x, .y = NULL, .z = NULL, percentage = FALSE, include_mis
   # tab(df, x, y) two-way
   # tab(df, x, y, z) three-way
   # tab(df[x == ?, y == ?,], x, y) two-way with sample restriction
-  require(dplyr)
-  # require(gmodels) # CrossTable(), old version which doesn't order values properly
-  require(descr) # CrossTable(), new version
-  require(expss) # cro()
+  require(dplyr, quietly = TRUE)
+  # require(gmodels, quietly = TRUE) # CrossTable(), old version which doesn't order values properly
+  require(descr, quietly = TRUE) # CrossTable(), new version
+  require(expss, quietly = TRUE) # cro()
   argdata <- deparse(substitute(data))
   argdata <-  substring(argdata, 1, ifelse(regexpr("\\[", argdata)==-1, nchar(argdata), regexpr("\\[", argdata)-1))
   argx <- paste0(argdata, "$", deparse(substitute(.x)))
@@ -261,8 +261,9 @@ trycatch_ <- function(func, x){
 }
 
 write_excel <- function(filename = "sheet.xlsx", ..., remove_char =  NULL){ 
-  require(xlsx)
-  require(rJava)
+  require(xlsx, quietly = TRUE)
+  require(rJava, quietly = TRUE)
+  require(XLConnect, quietly = TRUE)
   wb <- xlsx::createWorkbook("xlsx")
   if (is.null(remove_char)){
     n_args <- nargs()-1 # subtract first arg
