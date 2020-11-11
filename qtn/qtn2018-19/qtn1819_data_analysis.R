@@ -13,16 +13,16 @@ SCHOOL <- array(c(c("primary", "secondary"),                      # switch betwe
                 dim=c(2,2))                                         [2,1] # <- switch here
 
 setwd(sprintf("~%s/qtn/qtn2018-19/qtn1819_%s", setpath, substring(SCHOOL, 1, regexpr("ary", SCHOOL)+2)))
-library(scales) # percent()
-library(rowr) # cbind.fill()
+library(scales, quietly = TRUE) # percent()
+library(rowr, quietly = TRUE) # cbind.fill()
 # install.packages('https://cran.r-project.org/src/contrib/Archive/rowr/rowr_1.1.3.tar.gz', type="source", repos = NULL)
 # library(plyr) # rbind.fill()
 # library(rlist) # list.append()
-library(xlsx) # createWorkbook
+library(xlsx, quietly = TRUE) # createWorkbook
 # library(tidyverse)
-library(dplyr) # mutate()
-library(nlme) # lme
-library(magrittr) # pipe
+library(dplyr, quietly = TRUE) # mutate()
+library(nlme, quietly = TRUE) # lme
+library(magrittr, quietly = TRUE) # pipe
 
 df <- readRDS(sprintf("qtn1819_%s_long.rds", SCHOOL))
 dfwide <- readRDS(sprintf("qtn1819_%s_wide.rds", SCHOOL))
