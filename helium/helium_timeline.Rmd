@@ -1,6 +1,5 @@
 ---
 title: "Helium Timeline 2011-2017"
-output: html_notebook
 ---
 
 ```{r}
@@ -32,7 +31,7 @@ library(lubridate)
 # http://benalexkeen.com/creating-a-timeline-graphic-using-r-and-ggplot2/
 
 df$male <- as.factor(df$male)
-directions <- c(1, -1)
+directions <- c(1, -1) 
 
 # positions <- c(0.5, -0.5, 1.0, -1.0, 1.5, -1.5)
 # line_pos <- data.frame(
@@ -43,7 +42,9 @@ directions <- c(1, -1)
 # )
 # df <- merge(x=df, y=line_pos, by="date", all = TRUE)
 
-df$direction <- rep(directions, length.out=length(df$date)) # alternating direction (up & down)
+# df$direction <- rep(directions, length.out=length(df$date)) # alternating direction (up & down)
+df$direction <- rep(1, length.out=length(df$date)) # only up direction
+
 df$position <- (0 + df$articles/20)*df$direction # length of the vertical line (minimum value + number of articles scaled)
 
 df <- df[with(df, order(date)), ]
