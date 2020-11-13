@@ -4,7 +4,7 @@ setpath <- "/MEGAsync/Work/RA HKU/CSRP"
 setwd(sprintf("~%s", setpath))
 source("helper_functions.R")
 
-library(dplyr, quietly = TRUE)
+library(dplyr)
 
 # level 1 ----
 setwd(sprintf("~%s/qtn/qtn2019-20/secondary", setpath))

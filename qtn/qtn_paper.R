@@ -8,12 +8,12 @@ if (substring(getwd(),2,2) == ":") {
 setwd(sprintf("~%s", setpath))
 source("helper_functions.R")
 
-library(dplyr, quietly = TRUE)
-library(ggplot2, quietly = TRUE)
-library(lme4, quietly = TRUE)
-library(lmerTest, quietly = TRUE) # calculate p-values in summary()
-library(multcomp, quietly = TRUE) # glht
-library(ggpubr, quietly = TRUE) # ggarrange
+library(dplyr)
+library(ggplot2)
+library(lme4)
+library(lmerTest) # calculate p-values in summary()
+library(multcomp) # glht
+library(ggpubr) # ggarrange
 
 setwd(sprintf("~%s/qtn/", setpath))
 df <- readRDS("qtn1519_secondary_long.rds")
@@ -593,8 +593,8 @@ for (wave in c(3:4)){
         # SE <-  sqrt(vcov_A + vcov_B + 2* vcov_AB)
         # t_value3 <- beta3/SE
         # p_value3 <- (1-pnorm(abs(t_value3)))*2 # delta method should use z dist instead of t dist (ref: https://stats.stackexchange.com/questions/333445/degrees-of-freedom-for-t-test-after-delta-method)
-        outputs <- iferror(glht(fit, linfct = paste0("sch", sch_j, ":T1", " + ", "sch", sch_j, ":T1:intervention", " == 0"))  %>% summary(), 
-                            glht(fit, linfct = paste0("sch", sch_i, ":T1", " + ", "sch", sch_i, ":T1:intervention", " == 0"))  %>% summary())
+        outputs <- iferror(glht(fit, linfct = paste0("sch", sch_j, ":T1", " + ", "sch", sch_j, ":T1:intervention", " = 0"))  %>% summary(), 
+                            glht(fit, linfct = paste0("sch", sch_i, ":T1", " + ", "sch", sch_i, ":T1:intervention", " = 0"))  %>% summary())
         beta3 <- outputs$test$coefficients[1]
         p_value3 <- outputs$test$pvalues[1] # alternative method using contrast statements & glht
                           

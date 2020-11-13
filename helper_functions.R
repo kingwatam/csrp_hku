@@ -45,6 +45,7 @@ sum_func <- function(x, var_name) { # sum_func() is used inside summ()
 }
 
 summ <- function(...) { # summ(df$var1, df$var2, ...) or summ(df1, df2, ....) or sum(df$var1, df2)
+  require(dplyr)
   n_args <- nargs()
   arg <- substitute(list(...))
   arg_values <- list(...)
@@ -108,10 +109,10 @@ tab2 <- function(data, .x, .y = NULL, .z = NULL, percentage = FALSE, include_mis
   # tab(df, x, y) two-way
   # tab(df, x, y, z) three-way
   # tab(df[x == ?, y == ?,], x, y) two-way with sample restriction
-  require(dplyr, quietly = TRUE)
-  # require(gmodels, quietly = TRUE) # CrossTable(), old version which doesn't order values properly
-  require(descr, quietly = TRUE) # CrossTable(), new version
-  require(expss, quietly = TRUE) # cro()
+  require(dplyr)
+  # require(gmodels) # CrossTable(), old version which doesn't order values properly
+  require(descr) # CrossTable(), new version
+  require(expss) # cro()
   argdata <- deparse(substitute(data))
   argdata <-  substring(argdata, 1, ifelse(regexpr("\\[", argdata)==-1, nchar(argdata), regexpr("\\[", argdata)-1))
   argx <- paste0(argdata, "$", deparse(substitute(.x)))
@@ -261,9 +262,9 @@ trycatch_ <- function(func, x){
 }
 
 write_excel <- function(filename = "sheet.xlsx", ..., remove_char =  NULL){ 
-  require(xlsx, quietly = TRUE)
-  require(rJava, quietly = TRUE)
-  require(XLConnect, quietly = TRUE)
+  require(xlsx)
+  require(rJava)
+  require(XLConnect)
   wb <- xlsx::createWorkbook("xlsx")
   if (is.null(remove_char)){
     n_args <- nargs()-1 # subtract first arg
