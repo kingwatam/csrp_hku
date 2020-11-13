@@ -244,6 +244,116 @@ df <- subset(df, select = c(sch, imputed_sch, form, class, student_num, age, sex
                                   q1, q2, q1_2, q3, q4neg, q4pos, q5a, q5a2, q5b, q6, q7, q8a, q8b, q9a_b, q9c,
                                   control, submitdate, dob, T1, intervention, level))
 
+# selective program for 2020-2021 ----
+df_se <- df %>% # selective
+  filter(!is.na(sch) | sch %in% "NA") %>%
+  filter(T1 == 1 & intervention == 1)
+
+df_mean_intT1 <- df_se %>%
+  group_by(sch) %>%
+  summarise_at(c("q1_2", "q3", "q4neg", "q4pos", "q5a2", "q5b", "q6", "q7"), mean, na.rm = TRUE)
+
+df_se <- df_se[order(df_se$submitdate, decreasing = FALSE),] # order by submitdate so only earliest observation is kept for duplicates
+df_se <- distinct(df_se, sch, class, student_num, dob, .keep_all = TRUE) # keep only first instance of same student & T1 (i.e. remove any repeats)
+
+df_se$sex <- car::recode(as.numeric(df_se$sex),  "
+1 = 'F';
+2 = 'M'
+")
+
+questions <- t(array(c(c("q1_2", "Mental Health Knowledge"),  
+                       c("q3", "Psychological Distress"),  
+                       c("q4neg", "Negative Thinking"), 
+                       c("q4pos", "Positive Thinking"), 
+                       c("q5a2", "Life Satisfaction"),
+                       c("q5b", "Life Satisfaction  (BMSLSS)"),
+                       c("q6", "Empathy"),  
+                       c("q7", "Gratitude")), dim = c(2,8)))
+
+table_loop <- function(df_se, df_mean_intT1, question, question_name, school = NULL){
+  wb <- xlsx::createWorkbook(type="xlsx")
+  for (i in unique(df_se$sch)){
+    if (!is.null(school)){
+      i <- school
+    }
+    if (question %in% c('q3', 'q4neg')){
+      df_selective <- df_se %>% # selective
+        filter(sch ==  i) %>%
+        mutate(rank = order(order(-get(question)))) # rank q6 values by school from highest to lowest
+      
+      selective_n <- 30 # select at least 30 students
+      
+      df_selective <- df_selective %>% filter((get(question) >= min(get(question)[rank<=selective_n], na.rm=TRUE)))
+      lowest_highest <- 'Highest '
+      df_selective <- df_selective %>% arrange(sch, desc(get(question))) # by descending order
+    } else {
+      df_selective <- df_se %>% # selective
+        filter(sch ==  i) %>%
+        mutate(rank = order(order(get(question)))) # rank q6 values by school from lowest to highest
+      
+      selective_n <- 30 # select at least 30 students
+      
+      df_selective <- df_selective %>% filter((get(question) <= max(get(question)[rank<=selective_n], na.rm=TRUE)))
+      lowest_highest <- 'Lowest '
+      df_selective <- df_selective %>% arrange(sch, get(question)) # by acsending order
+    }
+    
+    df_selective_mean <- df_selective %>%
+      group_by(sch) %>%
+      summarise_at(c("q1_2", "q3", "q4neg", "q4pos", "q5a2", "q5b", "q6", "q7"), mean, na.rm = TRUE)
+    
+    table <- data.frame(matrix(ncol = 12,  nrow = 0))
+    table <- subset(df_selective[df_selective$sch==i,], select = c("class",
+                                                                   "student_num",
+                                                                   "sex",
+                                                                   "dob",
+                                                                   "q1_2", "q3", "q4neg", "q4pos", "q5a2", "q5b", "q6", "q7"))
+    colnames(table)  <-  c("Class",
+                           "Student Number",
+                           "Sex",
+                           "Date of Birth",
+                           "Mental Health Knowledge",
+                           "Psychological Distress"	,
+                           "Negative Thinking",
+                           "Positive Thinking",
+                           "Life Satisfaction",
+                           "Life Satisfaction (BMSLSS)",
+                           "Empathy",
+                           "Gratitude")
+    
+    table$`Date of Birth` <- ifelse(is.na(table$`Date of Birth`), NA,
+                                    as.character.Date(table$`Date of Birth`, tryFormats = "%Y/%m/%d"))
+    
+    table[nrow(table)+1,4] <- paste0("Mean of ", lowest_highest, questions[which(questions[,1]==question),2]," Group")
+    table[nrow(table)+1,4] <- "School Mean of Intervention Group"
+    table[nrow(table)-1,5:length(table)] <- sapply(round(df_selective_mean[df_selective_mean$sch==i,2:length(df_selective_mean)], 2),function(x)format(x,nsmall = 2))
+    table[nrow(table),5:length(table)] <- sapply(round(df_mean_intT1[df_mean_intT1$sch==i,2:length(df_mean_intT1)], 2),function(x)format(x,nsmall = 2))
+    
+    sheet <- xlsx::createSheet(wb, sheetName = i)
+    assign(paste0("sheet", i), sheet)
+    xlsx::addDataFrame(as.data.frame(table), get_("sheet", i),
+                       startRow=1, startColumn=1,
+                       row.names = FALSE, showNA = FALSE)
+    if (!is.null(school)){
+      break
+    }
+  }
+  if (!is.null(school)){
+    return(
+      xlsx::saveWorkbook(wb, paste0("qtn1920_sec_selective_qtn2021_", question_name, "_S", school, ".xlsx"), password=NULL)
+    )
+  }
+  xlsx::saveWorkbook(wb, paste0("qtn1920_sec_selective_qtn2021_", question_name, ".xlsx"), password=NULL)
+}
+
+setwd(sprintf("~%s/qtn/qtn2019-20/secondary/selective_qtn2021", setpath))
+
+table_loop(df_se, df_mean_intT1, 'q3', "GHQ")
+table_loop(df_se, df_mean_intT1, 'q6', "empathy")
+table_loop(df_se, df_mean_intT1, 'q7', "gratitude")
+
+rm(df_mean_intT1)
+
 dflevel1 <- df
 rm(df)
 
