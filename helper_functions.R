@@ -104,86 +104,6 @@ tab <- function(...){
   return(newTab)
 }
 
-tab2 <- function(data, .x, .y = NULL, .z = NULL, percentage = FALSE, include_missing = TRUE) { # yet to expand to more than 3-way, xtabs allows for unlimited number of ways in cross tabulation
-  # tab(df, x) one-way
-  # tab(df, x, y) two-way
-  # tab(df, x, y, z) three-way
-  # tab(df[x == ?, y == ?,], x, y) two-way with sample restriction
-  require(dplyr)
-  # require(gmodels) # CrossTable(), old version which doesn't order values properly
-  require(descr) # CrossTable(), new version
-  require(expss) # cro()
-  argdata <- deparse(substitute(data))
-  argdata <-  substring(argdata, 1, ifelse(regexpr("\\[", argdata)==-1, nchar(argdata), regexpr("\\[", argdata)-1))
-  argx <- paste0(argdata, "$", deparse(substitute(.x)))
-  .x <- rlang::quo_name(rlang::enquo(.x)) # this put quotes around .x, otherwise .x object is not found without specifying dataframe in variable name
-  .x <- eval(parse(text = paste0("data$", .x))) # this parse the data$var combination and evaluate it
-  if (!missing(.y)) {
-    argy <- paste0(argdata, "$", deparse(substitute(.y)))
-    .y <- rlang::quo_name(rlang::enquo(.y)) 
-    .y <- eval(parse(text = paste0("data$", .y)))
-  } 
-  if (!missing(.z)) {
-    argz <- paste0(argdata, "$", deparse(substitute(.z)))
-    .z <- rlang::quo_name(rlang::enquo(.z)) 
-    .z <- eval(parse(text = paste0("data$", .z)))
-  } 
-  if (missing(.y) & missing(.z)) {
-    if (is.numeric(.x) & length(.x[is.na(.x)]) > 0){
-      .x[is.na(.x)] <- "NA" # for some reason, CrossTable only shows NAs when variable is numeric with missing.include=TRUE
-      # .x <- factor(.x, levels = names(sort(table(.x), 
-      #                                      decreasing = TRUE)))
-    } else if (length(.x[is.na(.x)]) == 0){
-      include_missing = FALSE
-    }
-    Freq <- rep("",length(.x))
-    d <- data.frame(.x,Freq)
-    tryCatch({
-    return(descr::CrossTable(d$.x, Freq, dnn = c(argx, "Freq."), format = "SPSS", cell.layout = FALSE, prop.c = FALSE, prop.r = FALSE, prop.t = percentage, chisq=FALSE, prop.chisq=FALSE, missing.include=include_missing))
-    }, error=function(e){cat("cro() is used instead of CrossTable() due to only one observation/column!", "\n", "\n")}, warning=function(cond){cat("WARNING :",conditionMessage(cond), "\n")})
-    assign(paste0(argx), d$.x)
-    d <- apply_labels(d,
-                      .x = paste0(argdata, "$", argx))
-    return(cro(d$.x, Freq, total_label="Total"))
-    # return(table(d$.x, Freq, useNA="no"))
-    # return(CrossTable(d$.x, max.width=1, prop.c = FALSE, prop.r = FALSE, prop.t = FALSE, chisq=FALSE, prop.chisq=FALSE, missing.include=include_missing))
-    
-  } else if (missing(.z)) {
-    if (is.numeric(.x) & length(.x[is.na(.x)]) > 0){
-      .x[is.na(.x)] <- "NA"
-    }
-    # else if (length(.x[is.na(.x)]) == 0){
-    #   include_missing = FALSE
-    # }
-    if (is.numeric(.y) & length(.y[is.na(.y)]) > 0){
-      .y[is.na(.y)] <- "NA"
-    } 
-    if (length(.x[is.na(.x)]) > 0 | length(.y[is.na(.y)]) > 0){
-      include_missing = TRUE
-    } 
-    # else if (length(.y[is.na(.y)]) == 0){
-    #   include_missing = FALSE
-    # }
-    d <- data.frame(.x,.y)
-    tryCatch({
-    return(descr::CrossTable(d$.x, d$.y, dnn = c(argx, argy), format = "SPSS", cell.layout = FALSE, prop.c=percentage, prop.r = FALSE, prop.t = FALSE, chisq=FALSE, prop.chisq=FALSE, missing.include=include_missing))
-    }, error=function(e){cat("cro() is used instead of CrossTable() due to only one observation/column!", "\n", "\n")}, warning=function(cond){cat("WARNING :",conditionMessage(cond), "\n")})
-    d <- apply_labels(d,
-                      .x = paste0(argdata, "$", argx),
-                      .y = paste0(argdata, "$", argy))
-    return(cro(d$.x, d$.y, total_label="Total"))
-  } else {
-    if (length(.x[is.na(.x)]) > 0 | length(.y[is.na(.y)]) > 0 | length(.z[is.na(.z)]) > 0 ){
-      include_missing = TRUE
-    } 
-    d <- data.frame(.x, .y, .z)
-    newTab <- xtabs(~ .x + .y + .z, data = d, addNA = TRUE)
-    names(dimnames(newTab)) <- c(argx, argy, argz)
-    newTab <- ftable(addmargins(newTab, FUN = list(Total=sum), quiet = TRUE)) # flatten table and add margins/totals
-    return(newTab) 
-  }
-}
-
 round_format <- function(value, decimal_places = 2, check_object = FALSE){
   if (check_object == TRUE){
     if (!exists(deparse(substitute(value)), parent.frame())){
@@ -411,3 +331,4 @@ url_robust <- "https://raw.githubusercontent.com/IsidoreBeautrelet/economictheor
 text_file <- httr::content(httr::GET(url_robust), "text")
 eval(parse(text = text_file),
      envir=.GlobalEnv)
+rm(url_robust, text_file)
