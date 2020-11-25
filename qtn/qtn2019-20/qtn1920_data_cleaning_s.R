@@ -464,11 +464,13 @@ df$level <- 2
 df <- convert2NA(df, c(""))
 df$age <- as.numeric(floor((as.Date("2020-06-30")-as.Date(df$dob))/365.2425))
 
-df$intervention <- ifelse( (df$sch %in% "LHKSS" & df$form %in% 2) | # intervention group
-                             (df$sch %in% "MKES" & df$form %in% 1) |
-                             (df$sch %in% "LWLC" & df$form %in% 2) |
-                             (df$sch %in% "LSC" & df$form %in% 2) |
-                             (df$sch %in% "CWSFMSS" & df$form %in% 3), 1, NA) # no control group for level 2 this year
+# df$intervention <- ifelse( (df$sch %in% "LHKSS" & df$form %in% 2) | # intervention group
+#                              (df$sch %in% "MKES" & df$form %in% 1) |
+#                              (df$sch %in% "LWLC" & df$form %in% 2) |
+#                              (df$sch %in% "LSC" & df$form %in% 2) |
+#                              (df$sch %in% "CWSFMSS" & df$form %in% 3) |
+#                              (df$sch %in% "HLC" & df$form %in% 4), 1, NA) # no control group for level 2 this year
+df$intervention <- 1 # no control group for level 2 this year
 df$control <- ifelse(df$intervention, 0, 1)
 
 scoring_level2 <- function(df){
