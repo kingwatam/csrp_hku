@@ -58,7 +58,7 @@ df$sch <- car::recode(df$sch, "
 15 = 'TPM'
 ")
 
-# HEP, CYS, & PTS
+# HEP, CYS, PTS, & YCMC
 setwd(sprintf("~%s/qtn/qtn2019-20/primary", setpath))
 dfpre_HEP <- openxlsx::read.xlsx("HEP_P4_pretest.xlsx")
 dfpre_HEP <- dfpre_HEP[2:nrow(dfpre_HEP), 2:80]
@@ -66,6 +66,7 @@ dfpre_HEP$X7 <- NULL # remove empty column
 dfpre_HEP$sch <- "HEP"
 names(dfpre_HEP)[6:78] <- names(df)[16:88]
 names(dfpre_HEP)[1:5] <- c("class", "student_num", "dob", "sex", "submitdate")
+
 dfpre_CYS <- openxlsx::read.xlsx("CYS_pretest.xlsx")
 dfpre_CYS <- dfpre_CYS[2:nrow(dfpre_CYS), 2:81]
 dfpre_CYS$X3 <- car::recode(dfpre_CYS$X3, "
@@ -81,12 +82,24 @@ dfpre_CYS$X8 <- NULL # remove empty column
 dfpre_CYS$sch <- "CYS"
 names(dfpre_CYS)[6:78] <- names(df)[16:88]
 names(dfpre_CYS)[1:5] <- c("class", "student_num", "dob", "sex", "submitdate")
+
 dfpre_PTS <- openxlsx::read.xlsx("PTS_pretest_2019.xlsx")
 dfpre_PTS <- dfpre_PTS[2:nrow(dfpre_PTS), 2:79]
 dfpre_PTS$sch <- "PTS"
 names(dfpre_PTS)[6:78] <- names(df)[16:88]
 names(dfpre_PTS)[1:5] <- c("class", "student_num", "dob", "sex", "submitdate")
-# dfpost_CYS <- openxlsx::read.xlsx("CYS_posttest.xlsx")
+
+dfpost_CYS <- openxlsx::read.xlsx("CYS_posttest_new.xlsx")
+dfpost_CYS <- dfpost_CYS[2:nrow(dfpost_CYS), 2:94]
+dfpost_CYS$X2 <- paste0(dfpost_CYS$X2, dfpost_CYS$X3)
+dfpost_CYS$X3 <- NULL
+dfpost_CYS$X8 <- NULL # remove duplicate student_num
+dfpost_CYS$sch <- "CYS"
+names(dfpost_CYS)[6:78] <- names(df)[16:88]
+names(dfpost_CYS)[79:91] <- names(df)[90:102]
+names(dfpost_CYS)[1:5] <- c("class", "student_num", "dob", "sex", "submitdate")
+dfpost_CYS[, 6:91] <- lapply(dfpost_CYS[, 6:91], as.numeric)
+
 dfpost_YCMC <- openxlsx::read.xlsx("YCMC_2019-20_posttest.xlsx")
 dfpost_YCMC <- dfpost_YCMC[2:nrow(dfpost_YCMC), 2:93]
 dfpost_YCMC$X7 <- NULL # remove empty column
@@ -96,8 +109,8 @@ names(dfpost_YCMC)[79:91] <- names(df)[90:102]
 names(dfpost_YCMC)[1:5] <- c("class", "student_num", "dob", "sex", "submitdate")
 
 dfpre <- rbind(dfpre_HEP, dfpre_CYS, dfpre_PTS)
-dfpost <- dfpost_YCMC
-rm(dfpre_HEP, dfpre_CYS, dfpre_PTS, dfpost_YCMC)
+dfpost <- rbind(dfpost_CYS, dfpost_YCMC)
+rm(dfpre_HEP, dfpre_CYS, dfpre_PTS, dfpost_YCMC, dfpost_CYS)
 
 dfpre$T1 <- 0
 dfpost$T1 <- 1
@@ -127,6 +140,9 @@ dfnew[, 22:26] <- lapply(dfnew[, 22:26], function(x) car::recode(x, "
                                                                  as.numeric = TRUE))
 dfnew$A01_1 <- as.numeric(dfnew$A01_1)
 dfnew[6:21] <- (dfnew[6:21]-2)*-1 # from 1:2 to 0:1
+
+dfnew$intervention <- 1
+dfnew$control <- 0
 
 df <-  plyr::rbind.fill(df, dfnew)
 rm(dfnew)
@@ -387,6 +403,9 @@ dfnew$submitdate <- as.Date(dfnew$submitdate, format = "%d%m%Y")
 dfnew[, c("Q01x01_1", "Q01x02")] <- lapply(dfnew[, c("Q01x01_1", "Q01x02")], as.numeric)
 dfnew[6:18] <- (dfnew[6:18]-2)*-1 # from 1:2 to 0:1
 
+dfnew$intervention <- 1
+dfnew$control <- 0
+
 df <-  plyr::rbind.fill(df, dfnew)
 rm(dfnew)
 
@@ -585,6 +604,9 @@ dfnew[, 16:20] <- lapply(dfnew[, 16:20], function(x) car::recode(x, "
                                                                  4 = 'D'
                                                                  ", as.numeric = TRUE))
 dfnew[6:15] <- (dfnew[6:15]-2)*-1 # from 1:2 to 0:1
+
+dfnew$intervention <- 1
+dfnew$control <- 0
 
 df <-  plyr::rbind.fill(df, dfnew)
 rm(dfnew)
