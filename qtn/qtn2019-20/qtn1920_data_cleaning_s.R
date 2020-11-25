@@ -19,7 +19,6 @@ dfpre$T1 <- 0
 dfpost$T1 <- 1
 df <- plyr::rbind.fill(dfpre, dfpost)
 rm(dfpre, dfpost)
-df$level <- 1
 
 df <- convert2NA(df, c(""))
 
@@ -238,6 +237,7 @@ scoring_level1 <- function(df){
 
 df <- cbind(df, scoring_level1(df))
 
+df$level <- 1
 level1 <- df
 
 df <- subset(df, select = c(sch, imputed_sch, form, class, student_num, age, sex,
@@ -459,7 +459,6 @@ names(dfpre)[99:115] <- names(dfpost)[91:107]
 
 df <- plyr::rbind.fill(dfpre, dfpost)
 rm(dfpre, dfpost)
-df$level <- 2
 
 df <- convert2NA(df, c(""))
 df$age <- as.numeric(floor((as.Date("2020-06-30")-as.Date(df$dob))/365.2425))
@@ -571,6 +570,7 @@ scoring_level2 <- function(df){
 
 df <- cbind(df, scoring_level2(df))
 
+df$level <- 2
 level2 <- df
 
 df <- subset(df, select = c(sch, imputed_sch, form, class, student_num, age, sex, 
@@ -590,7 +590,6 @@ dfpost$T1 <- 1
 
 df <- dfpost
 rm(dfpost)
-df$level <- 3
 
 names(df)[names(df)=='Q01'] <- 'form' 
 names(df)[names(df)=='Q02'] <- 'student_num'
@@ -702,6 +701,7 @@ scoring_level3 <- function(df){
 
 df <- cbind(df, scoring_level3(df))
 
+df$level <- 3
 level3 <- df
 
 df <- subset(df, select = c(sch, form, class, student_num, age, sex, 
