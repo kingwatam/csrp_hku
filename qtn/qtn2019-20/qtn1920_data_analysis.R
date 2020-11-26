@@ -11,14 +11,20 @@ library(dplyr)
 
 SCHOOL <- array(c(c("primary", "secondary"),                      # switch between universal primary schools [1,1] & universal secondary schools [2,1]
                   c("primary_selective", "secondary_selective")), # switch between selective primary schools [1,2] & selective secondary schools [2,2]
-                dim=c(2,2))                                         [1,1] # <- switch here
+                dim=c(2,2))                                         [1,2] # <- switch here
 
-setwd(sprintf("~%s/qtn/qtn2019-20/%s", setpath, substring(SCHOOL, 1, regexpr("ary", SCHOOL)+2)))
-df1 <- readRDS(sprintf("qtn1920_%s_level1.rds", SCHOOL))
-df2 <- readRDS(sprintf("qtn1920_%s_level2.rds", SCHOOL))
-df3 <- readRDS(sprintf("qtn1920_%s_level3.rds", SCHOOL))
+if (SCHOOL == "primary_selective"){
+  setwd(sprintf("~%s/qtn/qtn2019-20/%s/selective", setpath, substring(SCHOOL, 1, regexpr("ary", SCHOOL)+2)))
+  df <- readRDS(sprintf("qtn1920_%s.rds", SCHOOL))
+} else {
+  setwd(sprintf("~%s/qtn/qtn2019-20/%s", setpath, substring(SCHOOL, 1, regexpr("ary", SCHOOL)+2)))
+  df1 <- readRDS(sprintf("qtn1920_%s_level1.rds", SCHOOL))
+  df2 <- readRDS(sprintf("qtn1920_%s_level2.rds", SCHOOL))
+  df3 <- readRDS(sprintf("qtn1920_%s_level3.rds", SCHOOL))
+}
 
-# OUtcomes ----
+
+# Outcomes ----
 if (SCHOOL == "primary"){
   questions_level1 <- t(array(c(c("q1", "Mental Health Knowledge", "0-21"),  
                                 c("q2", "Subjective Happiness", "1-7"),  
@@ -84,7 +90,6 @@ if (SCHOOL == "primary"){
                                 # c("q9a_b", "Help-seeking", "1-2"), 
                                 # c("q9c", "Prejudice (PPMI)", "1-3")
   ), dim = c(3, 7)))
-  
   questions_level2 <- t(array(c(c("q1_2", "Mental Health Knowledge", "0-14"),  
                                 c("q3", "Empathy (C-IRI)", "0-88"),  
                                 c("q3_PD", "- Personal Distress", "0-28"),
@@ -103,40 +108,90 @@ if (SCHOOL == "primary"){
                                 # c("q9c", "Prejudice (PPMI)", "1-2")
   ), dim = c(3, 10)))
   
+  questions_level3 <- t(array(c(c("q1_2", "Mental Health Knowledge", "0-14"),  
+                                c("q3", "Empathy (C-IRI)", "0-88"),  
+                                c("q3_PD", "- Personal Distress", "0-28"),
+                                c("q3_FS", "- Fantasy", "0-16"),
+                                c("q3_ES", "- Empathy", "0-44"),
+                                c("q5a", "Emotional Competence", "6-36"),
+                                c("q5b", "Behavioural Competence", "6-36"),
+                                # c("q6a", "Life Satisfaction (SLSS)","7-42"),
+                                # c("q6a2", "Life Satisfaction (1-item)","1-7"),
+                                c("q6b", "Life Satisfaction (BMSLSS)", "5-35"),
+                                c("q7", "Psychological Distress", "0-36") 
+                                # c("q8a", "Compassion (CS)", "1-5"), 
+                                # c("q8b", "Self-compassion (SCS)", "1-5"), 
+                                # c("q9a_b", "Help-seeking", "1-2"), 
+                                # c("q9c", "Prejudice (PPMI)", "1-2")
+  ), dim = c(3, 9)))
+  
   
 } else if(SCHOOL == "primary_selective") {
+  questions <- t(array(c(c("q1", "Subjective Happiness", "4-28"),  
+                         c("q2neg", "Negative Affect", "10-50"),  
+                         c("q2pos", "Positive Affect", "10-50"),  
+                         c("q3", "Self-esteem", "10-40"), 
+                         c("q4a", "Strengths Knowledge", "8-56"),  
+                         c("q4b", "Strengths Use", "14-98"),  
+                         c("q5neg", "Negative Thinking", "0-40"), 
+                         c("q5pos", "Positive Thinking", "0-40")
+  ), dim = c(3, 8)))
   
 } else if(SCHOOL == "secondary_selective") {
   
 }
 
-# main functions ----
+# Main functions ----
 
 pre_process <- function(df, both = FALSE){
   df <- as.data.frame(df)
-  df <- df %>%
-    filter(!is.na(sex) & !is.na(age) & !is.na(intervention) & !is.na(T1)) 
-  df <- df %>%
-    mutate(uid = paste(sch, class, student_num, dob, sex)) 
   
+  # pick highest N based on outcome variables
+  if (is.null(df$level)){
+    QUESTIONS <- questions
+  } else if (1 %in% unique(df$level)){
+    QUESTIONS <- questions_level1
+  } else if (2 %in% unique(df$level)){
+    QUESTIONS <- questions_level2
+  } else if (3 %in% unique(df$level)){
+    QUESTIONS <- questions_level3
+  }
+  question_max_n <- QUESTIONS[1,1]
+  n_df <- 0
+  for (question in QUESTIONS[,1]){
+    n_new <- length(df[which(!(df[, question] %in% NA)), question])
+    if (n_new > n_df){      
+      n_df <- n_new
+      question_max_n <- question
+    }
+    # print(paste(question, n_new))
+  }
+  df <- df[which(!(df[, question_max_n] %in% NA)),]
+  
+  # remove NAs and generate uids
+  df <- df %>%
+    filter(!is.na(sex) & !is.na(age) & !is.na(intervention) & !is.na(T1) & !is.na(sch))
+  df <- df %>%
+    mutate(uid = paste(sch, class, student_num, dob, sex))
+
   df$sex <- as.numeric(df$sex)
   df$gender <- car::recode(df$sex,  "
   1 = 'female';
   2 = 'male'
   ")
-  
+
   ## examine duplicates
   # df %>%
   #   add_count(sch, class, student_num, dob, T1, sex) %>%
-  #   filter(n >= 2) %>% View() 
-  
+  #   filter(n >= 2) %>% View()
+
   # remove duplicates
   df <- df[order(df$submitdate, decreasing = FALSE),] # order by submitdate so only earliest observation is kept for duplicates
   df <- distinct(df, sch, class, student_num, dob, T1, sex, .keep_all = TRUE) # keep only first instance of same student & T1 (i.e. remove any repeats)
-  
+
   df$uid <- as.factor(df$uid)
   levels(df$uid) <- 1:n_distinct(df$uid)
-  
+
   if (both){
     df <- df %>%
       group_by(uid) %>%
@@ -148,7 +203,7 @@ pre_process <- function(df, both = FALSE){
 
 desc_stat <- function(df){
   df <- df %>%
-    filter(!is.na(gender) & !is.na(age) & !is.na(intervention) & !is.na(T1)) %>%
+    filter(!is.na(gender) & !is.na(age) & !is.na(intervention) & !is.na(T1) & !is.na(sch)) %>%
     group_by(uid) %>%
     filter(n() == 1 | (n() == 2 & T1 == 0))  # keep T1 if both T0 & T1 avaiable
   
@@ -229,8 +284,11 @@ full_results <- function(df, questions){
     # MLM results
     iferror(
       fit <- eval_(
-        "lmer(", dep_var, " ~ 1+T1*intervention+ (1 | sch/uid) ,  REML = TRUE, data =  df)")
-      , {row_count <- row_count + 2 ; next})
+        "lmer(", dep_var, " ~ 1+T1*intervention+ (1 | sch/uid),  REML = TRUE, data =  df, control=lmerControl(optimizer='nloptwrap'))") # use nloptwrap or bobyqa instead of default
+      , {iferror(
+        fit <- eval_(
+          "lmer(", dep_var, " ~ 1+T1*intervention+ (1 | uid),  REML = TRUE, data =  df, control=lmerControl(optimizer='nloptwrap'))") # use nloptwrap or bobyqa instead of default
+        , {row_count <- row_count + 2 ; next})})
     
     N <- summary(fit)$ngrps["uid:sch"]
     contrast_matrix <-  matrix(c(0, 0, 0, 0), 1)
@@ -362,8 +420,13 @@ int_results <- function(df, questions){
     table[row_count, 2] <- questions[which(questions==dep_var),3]
     
     # MLM results
-    fit <- eval_(
-        "lmer(", dep_var, " ~ 1+T1+ (1 | sch/uid) ,  REML = TRUE, data =  df)")
+    iferror(
+      fit <- eval_(
+        "lmer(", dep_var, " ~ 1+T1+ (1 | sch/uid),  REML = TRUE, data =  df, control=lmerControl(optimizer='nloptwrap'))") # use nloptwrap or bobyqa instead of default
+      , {iferror(
+        fit <- eval_(
+          "lmer(", dep_var, " ~ 1+T1+ (1 | uid),  REML = TRUE, data =  df, control=lmerControl(optimizer='nloptwrap'))") # use nloptwrap or bobyqa instead of default
+        , {row_count <- row_count + 2 ; next})})
     
     N <- summary(fit)$ngrps["uid:sch"]
     contrast_matrix <-  matrix(c(0, 0), 1)
@@ -457,18 +520,26 @@ if (SCHOOL == "primary"){
   level1_table_both <- full_results(df, questions_level1)
   level1_desc_both <- desc_stat(df)
   level1_sch_both <- sch_stat(df)
+} 
+
+# level 2 & 3 results
+if (SCHOOL == "primary_selective"){
+  df <- pre_process(df, both = TRUE)
+  selective_table_both <- int_results(df, questions)
+  selective_desc_both <- desc_stat(df)
+  selective_sch_both <- sch_stat(df)
+} else {
+  df <- df2
+  df <- pre_process(df)
+  level2_table <- int_results(df, questions_level2)
+  level2_desc <- desc_stat(df)
+  level2_sch <- sch_stat(df)
+  df <- pre_process(df, both = TRUE)
+  level2_table_both <- int_results(df, questions_level2)
+  level2_desc_both <- desc_stat(df)
+  level2_sch_both <- sch_stat(df)
 }
 
-# level 2 & 3 results 
-df <- df2
-df <- pre_process(df)
-level2_table <- int_results(df, questions_level2)
-level2_desc <- desc_stat(df)
-level2_sch <- sch_stat(df)
-df <- pre_process(df, both = TRUE)
-level2_table_both <- int_results(df, questions_level2)
-level2_desc_both <- desc_stat(df)
-level2_sch_both <- sch_stat(df)
 
 if (SCHOOL == "primary"){
   df <- df3
@@ -496,17 +567,29 @@ if (SCHOOL == "primary"){
 # install rowr package
 # install.packages("https://cran.r-project.org/src/contrib/Archive/rowr/rowr_1.1.3.tar.gz", repo=NULL, type="source", dependencies = TRUE)
 
-level1 <- rowr::cbind.fill(level1_desc, level1_sch, level1_table, fill = NA)
-colnames(level1) <- c(colnames(level1_desc), colnames(level1_sch), colnames(level1_table))
-
-level1_both <- rowr::cbind.fill(level1_desc_both, level1_sch_both, level1_table_both, fill = NA)
-colnames(level1_both) <- c(colnames(level1_desc_both), colnames(level1_sch_both), colnames(level1_table_both))
-
-level2 <- rowr::cbind.fill(level2_desc, level2_sch, level2_table, fill = NA)
-colnames(level2) <- c(colnames(level2_desc), colnames(level2_sch), colnames(level2_table))
-
-level2_both <- rowr::cbind.fill(level2_desc_both, level2_sch_both, level2_table_both, fill = NA)
-colnames(level2_both) <- c(colnames(level2_desc_both), colnames(level2_sch_both), colnames(level2_table_both))
+if (SCHOOL == "primary_selective"){
+  selective_both <- rowr::cbind.fill(selective_desc_both, selective_sch_both, selective_table_both, fill = NA)
+  colnames(selective_both) <- c(colnames(selective_desc_both), colnames(selective_sch_both), colnames(selective_table_both))
+  
+  rm(selective_desc_both, selective_sch_both, selective_table_both)
+  
+  setwd(sprintf("~%s/qtn/qtn2019-20/%s/results", setpath, substring(SCHOOL, 1, regexpr("ary", SCHOOL)+2)))
+  write_excel(sprintf("qtn1920_%s_results.xlsx", SCHOOL), 
+              selective_both)
+  
+} else {
+  level1 <- rowr::cbind.fill(level1_desc, level1_sch, level1_table, fill = NA)
+  colnames(level1) <- c(colnames(level1_desc), colnames(level1_sch), colnames(level1_table))
+  
+  level1_both <- rowr::cbind.fill(level1_desc_both, level1_sch_both, level1_table_both, fill = NA)
+  colnames(level1_both) <- c(colnames(level1_desc_both), colnames(level1_sch_both), colnames(level1_table_both))
+  
+  level2 <- rowr::cbind.fill(level2_desc, level2_sch, level2_table, fill = NA)
+  colnames(level2) <- c(colnames(level2_desc), colnames(level2_sch), colnames(level2_table))
+  
+  level2_both <- rowr::cbind.fill(level2_desc_both, level2_sch_both, level2_table_both, fill = NA)
+  colnames(level2_both) <- c(colnames(level2_desc_both), colnames(level2_sch_both), colnames(level2_table_both))
+}
 
 if (SCHOOL == "primary"){
   level3 <- rowr::cbind.fill(level3_desc, level3_sch, level3_table, fill = NA)
@@ -515,15 +598,15 @@ if (SCHOOL == "primary"){
   level3_both <- rowr::cbind.fill(level3_desc_both, level3_sch_both, level3_table_both, fill = NA)
   colnames(level3_both) <- c(colnames(level3_desc_both), colnames(level3_sch_both), colnames(level3_table_both))
   
-  rm(level1_desc, level1_table, 
-     level1_desc_both, level1_table_both, 
-     level2_desc, level2_table, 
-     level2_desc_both, level2_table_both, 
-     level3_desc, level3_table, 
-     level3_desc_both, level3_table_both)
+  rm(level1_desc, level1_sch, level1_table, 
+     level1_desc_both, level1_sch_both, level1_table_both, 
+     level2_desc, level2_sch, level2_table, 
+     level2_desc_both, level2_sch_both, level2_table_both, 
+     level3_desc, level3_sch, level3_table, 
+     level3_desc_both, level3_sch_both, level3_table_both)
   
   setwd(sprintf("~%s/qtn/qtn2019-20/%s/results", setpath, substring(SCHOOL, 1, regexpr("ary", SCHOOL)+2)))
-  write_excel(sprintf("qtn1920_%s_results.xlsx", substring(SCHOOL, 1, regexpr("ary", SCHOOL)+2)), 
+  write_excel(sprintf("qtn1920_%s_results.xlsx", substring(SCHOOL, 1, regexpr("ary", SCHOOL)+2)),
               level1, level1_both, level2, level2_both, level3, level3_both)
   
 } else if (SCHOOL == "secondary") {
@@ -533,14 +616,15 @@ if (SCHOOL == "primary"){
   level3 <- rowr::cbind.fill(level3_desc, level3_sch, fill = NA)
   colnames(level3) <- c(colnames(level3_desc), colnames(level3_sch))
   
-  rm(level1_desc, level1_table, 
-     level1_desc_both, level1_table_both, 
-     level2_desc, level2_table, 
-     level2_desc_both, level2_table_both, 
-     level23_desc, level23_table)
+  rm(level1_desc, level1_sch, level1_table, 
+     level1_desc_both, level1_sch_both, level1_table_both, 
+     level2_desc, level2_sch, level2_table, 
+     level2_desc_both, level2_sch_both, level2_table_both, 
+     level23_desc, level23_table,
+     level3_desc, level3_sch)
   
   setwd(sprintf("~%s/qtn/qtn2019-20/%s/results", setpath, substring(SCHOOL, 1, regexpr("ary", SCHOOL)+2)))
-  write_excel(sprintf("qtn1920_%s_results.xlsx", substring(SCHOOL, 1, regexpr("ary", SCHOOL)+2)), 
+  write_excel(sprintf("qtn1920_%s_results.xlsx", substring(SCHOOL, 1, regexpr("ary", SCHOOL)+2)),
               level1, level1_both, level2, level2_both, level23, level3)
 }
 
