@@ -174,7 +174,6 @@ df$uid[is.na(df$id)] <- NA
 df %>% select(starts_with("Ass1_P1")) %>% colnames(.) -> qA
 df %>% select(starts_with("Ass1_P2")) %>% colnames(.) -> qB
 df %>% select(starts_with("Ass1_P")) %>% colnames(.) -> qAB
-df %>% select(starts_with("Ass3_P4")) %>% colnames(.) -> qD
 df %>% select(starts_with("Ass2_P3")) %>% colnames(.) -> qC
 df %>% select(starts_with("Ass3_P4")) %>% colnames(.) -> qD
 df %>% select(starts_with("Ass4_P5")) %>% colnames(.) -> qE
