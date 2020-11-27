@@ -171,33 +171,40 @@ levels(df$uid) <- 1:n_distinct(df$uid)
 df$uid[is.na(df$id)] <- NA
 
 # outcome scoring ----
-df %>% select(starts_with("Ass1_P1")) %>% colnames(.) -> qA
-df %>% select(starts_with("Ass1_P2")) %>% colnames(.) -> qB
-df %>% select(starts_with("Ass1_P")) %>% colnames(.) -> qAB
-df %>% select(starts_with("Ass2_P3")) %>% colnames(.) -> qC
-df %>% select(starts_with("Ass3_P4")) %>% colnames(.) -> qD
-df %>% select(starts_with("Ass4_P5")) %>% colnames(.) -> qE
+scoring <- function(df){
+  df %>% select(starts_with("Ass1_P1")) %>% colnames(.) -> qA
+  df %>% select(starts_with("Ass1_P2")) %>% colnames(.) -> qB
+  df %>% select(starts_with("Ass1_P")) %>% colnames(.) -> qAB
+  df %>% select(starts_with("Ass2_P3")) %>% colnames(.) -> qC
+  df %>% select(starts_with("Ass3_P4")) %>% colnames(.) -> qD
+  df %>% select(starts_with("Ass4_P5")) %>% colnames(.) -> qE
+  
+  reverse_qC <- qC[c(4)] 
+  df[reverse_qC] <- (df[reverse_qC]-8)*-1 # reverse (1:7) to (7:1)
+  
+  reverse_qE <- qE[c(1, 3, 4, 7, 8, 12)]
+  df[reverse_qE] <- (df[reverse_qE]-3)*-1 # reverse (0:3) to (3:0)
+  
+  df <- df %>% 
+    mutate(q1 = rowMeans(.[qA], na.rm = FALSE),
+           q2 = rowMeans(.[qB], na.rm = FALSE),
+           q1_2 = rowMeans(.[qAB], na.rm = FALSE),
+           q3 = rowSums(.[qC], na.rm = FALSE), # P3 Subjective Happiness, range(4-28)
+           q4 = rowSums(.[qD], na.rm = FALSE), # P4 Life Satisfaction (SWLS), range(5-35)
+           q5 = rowSums(.[qE], na.rm = FALSE)) # P5 Psychological Distress (GHQ), range(0-36)
+  
+  return(subset(df, select = c(q1, q2, q1_2, q3, q4, q5
+  )))
+}
 
-reverse_qC <- qC[c(4)] 
-df[reverse_qC] <- (df[reverse_qC]-8)*-1 # reverse (1:7) to (7:1)
-
-reverse_qE <- qE[c(1, 3, 4, 7, 8, 12)]
-df[reverse_qE] <- (df[reverse_qE]-3)*-1 # reverse (0:3) to (3:0)
-
-df <- df %>% 
-  mutate(q1 = rowMeans(.[qA], na.rm = FALSE),
-         q2 = rowMeans(.[qB], na.rm = FALSE),
-         q1_2 = rowMeans(.[qAB], na.rm = FALSE),
-         q3 = rowSums(.[qC], na.rm = FALSE), # P3 Subjective Happiness, range(4-28)
-         q4 = rowSums(.[qD], na.rm = FALSE), # P4 Life Satisfaction (SWLS), range(5-35)
-         q5 = rowSums(.[qE], na.rm = FALSE)) # P5 Psychological Distress (GHQ), range(0-36)
+df <- cbind(df, scoring(df))
 
 setwd(sprintf("~%s/qtn/qtn2018-19/qtn1819_teacher_efficacy", setpath))
 
-# saveRDS(df[which(df$pri==1),], file = "qtn1819_teacher_efficacy_pri.rds")
-# saveRDS(df[which(df$pri==0),], file = "qtn1819_teacher_efficacy_sec.rds")
-write_excel("qtn1819_teacher_efficacy_pri.xlsx", df[which(df$pri==1),])
-write_excel("qtn1819_teacher_efficacy_sec.xlsx", df[which(df$pri==1),])
+primary <- df[which(df$pri==1),]
+secondary <- df[which(df$pri==0),]
+
+write_excel("qtn1819_teacher_efficacy_data.xlsx", primary, secondary)
 
 get_results <- function(df) {
   df_pre <- df[!is.na(df$id) & df$T1==0,] # remove missing IDs for merging
