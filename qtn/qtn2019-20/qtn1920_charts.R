@@ -9,11 +9,11 @@ library(ggplot2)
 
 SCHOOL <- array(c(c("primary", "secondary"),                      # switch between universal primary schools [1,1] & universal secondary schools [2,1]
                   c("primary_selective", "secondary_selective")), # switch between selective primary schools [1,2] & selective secondary schools [2,2]
-                dim=c(2,2))                                         [1,2] # <- switch here
+                dim=c(2,2))                                         [2,1] # <- switch here
 
 LEVEL <-  c("level1", "level2", "level3",
             "level1_both", "level2_both", "level3_both",
-            "level23", "") [1] # <- input program level (based on Excel file sheet names)
+            "level23", "") [7] # <- input program level (based on Excel file sheet names)
 # INDEX <- 1 # input outcome index
 upper_perc <- 0.85 # y-axis lower bound as percentage of range (e.g. 0.85 means 85% of the maximum value)
 lower_perc <- 1-upper_perc # y-axis lower bound as percentage of range
@@ -85,9 +85,9 @@ if (SCHOOL == "primary"){
   ), dim = c(3, 7)))
   questions_level2 <- t(array(c(c("q1_2", "Mental Health Knowledge", "0-14"),  
                                 c("q3", "Empathy (C-IRI)", "0-88"),  
-                                c("q3_PD", "- Personal Distress", "0-28"),
-                                c("q3_FS", "- Fantasy", "0-16"),
-                                c("q3_ES", "- Empathy", "0-44"),
+                                c("q3_PD", "Empathy (C-IRI) - Personal Distress", "0-28"),
+                                c("q3_FS", "Empathy (C-IRI) - Fantasy", "0-16"),
+                                c("q3_ES", "Empathy (C-IRI) - Empathy", "0-44"),
                                 c("q4", "Empathy Quotient", "0-44"),
                                 c("q5a", "Emotional Competence", "6-36"),
                                 c("q5b", "Behavioural Competence", "6-36"),
@@ -103,9 +103,9 @@ if (SCHOOL == "primary"){
   
   questions_level3 <- t(array(c(c("q1_2", "Mental Health Knowledge", "0-14"),  
                                 c("q3", "Empathy (C-IRI)", "0-88"),  
-                                c("q3_PD", "- Personal Distress", "0-28"),
-                                c("q3_FS", "- Fantasy", "0-16"),
-                                c("q3_ES", "- Empathy", "0-44"),
+                                c("q3_PD", "Empathy (C-IRI) - Personal Distress", "0-28"),
+                                c("q3_FS", "Empathy (C-IRI) - Fantasy", "0-16"),
+                                c("q3_ES", "Empathy (C-IRI) - Empathy", "0-44"),
                                 c("q5a", "Emotional Competence", "6-36"),
                                 c("q5b", "Behavioural Competence", "6-36"),
                                 # c("q6a", "Life Satisfaction (SLSS)","7-42"),
@@ -209,7 +209,7 @@ for (INDEX in 1:nrow(questions)){
     geom_point(size = 1) +
     ylim(c(lower_ylim, upper_ylim)) + 
     # scale_y_continuous(limits=c(0, NA)) + 
-    labs(title = paste0(outcome, " - ", TITLE))
+    labs(title = paste0(questions[INDEX,2], " - ", TITLE))
   
   setwd(sprintf("~%s/qtn/qtn2019-20/charts/%s/%s", setpath, SCHOOL, LEVEL))
   # Cairo::CairoWin()
