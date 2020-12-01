@@ -23,7 +23,6 @@ if (SCHOOL == "primary_selective"){
   df3 <- readRDS(sprintf("qtn1920_%s_level3.rds", SCHOOL))
 }
 
-
 # Outcomes ----
 if (SCHOOL == "primary"){
   questions_level1 <- t(array(c(c("q1", "Mental Health Knowledge", "0-21"),  
