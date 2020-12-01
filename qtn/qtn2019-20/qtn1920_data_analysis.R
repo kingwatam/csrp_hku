@@ -73,7 +73,6 @@ if (SCHOOL == "primary"){
                                 # c("q10c", "Prejudice (PPMI)", "1-3")
   ), dim = c(3, 11)))
   
-  
 } else if(SCHOOL == "secondary") {
   questions_level1 <- t(array(c(c("q1_2", "Mental Health Knowledge", "0-20"),  
                                 c("q3", "Psychological Distress", "0-36"),  
@@ -123,7 +122,6 @@ if (SCHOOL == "primary"){
                                 # c("q9a_b", "Help-seeking", "1-2"), 
                                 # c("q9c", "Prejudice (PPMI)", "1-2")
   ), dim = c(3, 9)))
-  
   
 } else if(SCHOOL == "primary_selective") {
   questions <- t(array(c(c("q1", "Subjective Happiness", "4-28"),  
@@ -563,7 +561,8 @@ if (SCHOOL == "primary"){
   level3_sch <- sch_stat(df)
 }
 
-# install rowr package
+# Combine and save results ----
+# install rowr package for cbind.fill
 # install.packages("https://cran.r-project.org/src/contrib/Archive/rowr/rowr_1.1.3.tar.gz", repo=NULL, type="source", dependencies = TRUE)
 
 if (SCHOOL == "primary_selective"){
