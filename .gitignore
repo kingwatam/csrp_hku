@@ -6,8 +6,7 @@
 bert/functions/
 cc/archive/
 early_warning/xinyi_data
-multivariate/
-!multivariate/bivariate.R
+multivariate/archive
 openup/
 poverty/monograph/archive
 qtn/qtn2018-19/qtn1819_secondary/archive
