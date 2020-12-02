@@ -1,10 +1,6 @@
 rm(list=ls())
 graphics.off()
-if (substring(getwd(),2,2) == ":") {
-  setpath <- "/MEGAsync/Work/RA HKU/CSRP"
-} else {
-  setpath <- ""
-}
+setpath <- "/MEGAsync/Work/HKU/CSRP"
 setwd(sprintf("~%s", setpath))
 source("helper_functions.R")
 
@@ -194,8 +190,10 @@ plot(st_geometry(s.sf), col = sf.colors(n = 214, categorical = TRUE), border = '
      axes = FALSE)
 
 
-register_google(key = as.character(read.csv("~/MEGAsync/Work/RA HKU/google_api.txt")[1, 2]) )
-
+register_google(key = as.character(read.csv("~/MEGAsync/Work/HKU/google_api.txt")[1, 2]) )
+# provide your own Google Maps Platform (Google Clouds) API key in the following format
+# "","x"
+# "1","api-key"
 
 hk_map <- get_map(location = c(lon = 114.1694, lat = 22.3193), 
                   maptype = "roadmap",

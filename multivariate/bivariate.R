@@ -1,10 +1,6 @@
 rm(list=ls())
 graphics.off()
-if (substring(getwd(),2,2) == ":") {
-  setpath <- "/MEGAsync/Work/RA HKU/CSRP"
-} else {
-  setpath <- ""
-}
+setpath <- "/MEGAsync/Work/HKU/CSRP"
 setwd(sprintf("~%s", setpath))
 source("helper_functions.R")
 
@@ -17,10 +13,10 @@ library(magrittr) # pipes
 library(parallel) # detectCores()
 library(mcglm)
 
-setwd(sprintf("~%s/multivariate", setpath))
-source('lm.bp2.R')
+setwd(sprintf("~%s/multivariate/archive", setpath))
 source('BPO.reg.R')
 
+setwd(sprintf("~%s/multivariate", setpath))
 df <- read.csv("archive/toydataset.csv")
 dfcount <- read.csv("archive/toydataset_count.csv")
 
@@ -118,25 +114,6 @@ invisible(capture.output(
                       , zeroL3 = FALSE, data = dfcount[complete.cases(dfcount),], verbose=FALSE) # zeroL3 is set to false for bivariate, true for regular GLM
 ))
   
-invisible(capture.output(
-  biv2 <- lm.bp2(female.rate ~  x1 + x2 + x3 , male.rate ~ x1 + x2 + x3
-               , l3 = ~  x1 + x2 + x3
-               , zeroL3 = FALSE, data = dfcount[complete.cases(dfcount),]
-               , weights1 = dfcount$female.st.pop[complete.cases(dfcount)]/100000
-               , weights2 = dfcount$male.st.pop[complete.cases(dfcount)]/100000
-               ,verbose=FALSE) # zeroL3 is set to false for bivariate, true for regular GLM
-))
-
-invisible(capture.output(
-  biv3 <- lm.bp2(female.rate ~  x1 + x2 + x3 , male.rate ~ x1 + x2 + x3
-                 , l3 = ~  x1 + x2 + x3
-                 , zeroL3 = FALSE, data = dfcount[complete.cases(dfcount),]
-                 , weights1 = dfcount$female.st.pop[complete.cases(dfcount)]/100000
-                 , weights2 = dfcount$male.st.pop[complete.cases(dfcount)]/100000
-                 , weights3 =  rowMeans(cbind(dfcount$female.st.pop[complete.cases(dfcount)], dfcount$male.st.pop[complete.cases(dfcount)]))/100000
-                 , verbose=FALSE) # zeroL3 is set to false for bivariate, true for regular GLM
-))
-
 invisible(capture.output(
   biv4 <- BPO.reg(female.num ~  x1 + x2 + x3 , male.num ~ x1 + x2 + x3
                  , l3 = ~  x1 + x2 + x3

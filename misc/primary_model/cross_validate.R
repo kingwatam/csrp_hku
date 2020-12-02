@@ -1,11 +1,6 @@
 rm(list=ls())
 graphics.off()
-if (substring(getwd(),2,2) == ":") {
-  setpath <- "/MEGAsync/Work/RA HKU/CSRP"
-} else {
-  setpath <- ""
-}
-
+setpath <- "/MEGAsync/Work/HKU/CSRP"
 setwd(sprintf("~%s", setpath))
 source("helper_functions.R")
 

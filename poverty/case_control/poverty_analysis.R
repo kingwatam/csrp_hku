@@ -1,10 +1,6 @@
 rm(list=ls())
 graphics.off()
-if (substring(getwd(),2,2) == ":") {
-  setpath <- "/MEGAsync/Work/RA HKU/CSRP"
-} else {
-  setpath <- ""
-}
+setpath <- "/MEGAsync/Work/HKU/CSRP"
 setwd(sprintf("~%s", setpath))
 source("helper_functions.R")
 
@@ -15,7 +11,7 @@ library(car) # recode
 # library(conflicted) # show conflicting functions with the same name from different packages
 # detach("package:conflicted", unload=TRUE)
 
-setwd(sprintf("~%s/poverty", setpath))
+setwd(sprintf("~%s/poverty/case_control", setpath))
 
 # # grouping <- xlsx::read.xlsx("Case Control Interivew_基本資料_original_king.xlsx", sheetName = "mismatch", stringsAsFactors = FALSE)
 # demog <- xlsx::read.xlsx("Case Control Interivew_基本資料_original_king.xlsx", sheetName = 'updated', stringsAsFactors = FALSE)

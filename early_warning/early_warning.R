@@ -1,10 +1,6 @@
 rm(list=ls())
 graphics.off()
-if (substring(getwd(),2,2) == ":") {
-  setpath <- "/MEGAsync/Work/RA HKU/CSRP"
-} else {
-  setpath <- ""
-}
+setpath <- "/MEGAsync/Work/HKU/CSRP"
 setwd(sprintf("~%s", setpath))
 source("helper_functions.R")
 
@@ -59,8 +55,6 @@ acf(model_ar$residuals)
 model_ar_r2 <- 1-get_poi_dev(model_ar)/ get_poi_dev(update(model_ar, suicide_threads ~ 1))
 print(model_ar_r2)
 
-
-
 for (i in 8:12){
   for (j in 1:31){
   select_date <- paste0('2019-', i, '-', j)
@@ -73,10 +67,6 @@ for (i in 8:12){
   print(model_r2)
   }
 }
-
-
-
-
 
 sentinment <- openxlsx::read.xlsx("early_warning_stats_daily.xlsx",sheet = "sentiment")
 sentinment$date <- as.Date(sentinment$date, origin = "1899-12-30")

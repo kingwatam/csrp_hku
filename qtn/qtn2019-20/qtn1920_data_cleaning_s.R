@@ -1,6 +1,6 @@
 rm(list=ls())
 graphics.off()
-setpath <- "/MEGAsync/Work/RA HKU/CSRP"
+setpath <- "/MEGAsync/Work/HKU/CSRP"
 setwd(sprintf("~%s", setpath))
 source("helper_functions.R")
 

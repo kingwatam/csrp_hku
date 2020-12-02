@@ -1,10 +1,6 @@
 rm(list=ls())
 graphics.off()
-if (substring(getwd(),2,2) == ":") {
-  setpath <- "/MEGAsync/Work/RA HKU/CSRP"
-} else {
-  setpath <- ""
-}
+setpath <- "/MEGAsync/Work/HKU/CSRP"
 setwd(sprintf("~%s", setpath))
 source("helper_functions.R")
 
@@ -22,7 +18,7 @@ setwd(sprintf("~%s/poverty/monograph/data", setpath))
 census16 <- readRDS('census16.RDS')
 
 # data cleaning ----
-# sourced & adapted from Jacky's R file (C:\Users\kingtam\Documents\MEGAsync\Work\RA HKU\CSRP\poverty\monograph\archive\census16_trend analysis.R)
+# sourced & adapted from Jacky's R file (C:\Users\kingtam\Documents\MEGAsync\Work\HKU\CSRP\poverty\monograph\archive\census16_trend analysis.R)
 
 #exclude non-domestic household and its members
 # table(census16$HHTYPE, exclude=NULL)
