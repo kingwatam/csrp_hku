@@ -8,7 +8,7 @@ This repository contains analysis code only. Coroners' Court records, pupil and 
 
 ## At a glance
 
-- **School mental health:** multi-year pupil surveys from the Question Your Mind programme, with universal and selective components
+- **School mental health:** multi-year pupil surveys from the Thematic Network on Developing Students' Positive Attitudes and Values, with universal and selective components
 - **Suicide epidemiology:** Coroners' Court data, school-level clustering, helium-inhalation suicides, online discussion and decriminalisation
 - **Poverty and health services:** a case-control study, census microdata, small-area mortality mapping and monograph indexing
 - **Methods:** multi-year data merging, mixed models, clustering, difference-in-differences, time-series analysis, survival-free count modelling and cross-validation
@@ -19,7 +19,7 @@ This repository contains analysis code only. Coroners' Court records, pupil and 
 
 | Folder | Project | Contents |
 |---|---|---|
-| `qtn/` | Question Your Mind school mental health programme | Multi-year pupil survey cleaning, repeated-measures modelling, teacher measures and programme-report figures |
+| `qtn/` | Thematic Network on Developing Students' Positive Attitudes and Values | Multi-year pupil survey cleaning, repeated-measures modelling, teacher measures and programme-report figures |
 | `school_clusters/` | School clustering and student suicide | Comparison of four clustering approaches and linkage to student suicide counts |
 | `cc/` | Coroners' Court suicide epidemiology | Record recoding, descriptive analysis and difference-in-differences analysis |
 | `poverty/` | Poverty, census and health services | Case-control analysis, census microdata, small-area mortality mapping and monograph indexing |
@@ -31,9 +31,9 @@ This repository contains analysis code only. Coroners' Court records, pupil and 
 | `misc/` | Forecasting examples | Repeated cross-validation, time-series cross-validation and PDF utilities |
 | `helper_functions.R` | Shared analysis library | Data management, reporting and R utility functions |
 
-## Question Your Mind school mental health programme
+## Thematic Network on Developing Students' Positive Attitudes and Values
 
-`qtn/` contains the largest body of work in the repository. It covers the Question Your Mind programme in Hong Kong primary and secondary schools across multiple school years, with universal and selective programme components.
+`qtn/` contains the largest body of work in the repository. It covers the Thematic Network on Developing Students' Positive Attitudes and Values in Hong Kong primary and secondary schools across multiple school years, with universal and selective programme components.
 
 ### Multi-year data merging
 
@@ -222,7 +222,7 @@ The same library was later extended at CUHK and Calgary, but those later functio
 
 Quantitative analyses from this period contributed to:
 
-- Question Your Mind programme reports and mixed-methods research
+- Thematic Network on Developing Students' Positive Attitudes and Values programme reports and mixed-methods research
 - A book chapter on suicide among ethnic minorities in Hong Kong
 - A monograph and final report on poverty alleviation
 - School-cluster and suicide-prevalence analyses
