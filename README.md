@@ -1,4 +1,4 @@
-# HKU CSRP research projects (2019-2020)
+﻿# HKU CSRP research projects (2019-2020)
 
 R code from my work as a Data Analyst (Senior Research Assistant) at the Centre for Suicide Research and Prevention, The University of Hong Kong, from September 2019 to December 2020.
 
@@ -230,3 +230,4 @@ Quantitative analyses from this period contributed to:
 Yip PS. *Social unrest and the poverty problem in Hong Kong*. Springer Singapore; 2021. https://doi.org/10.1007/978-981-33-6629-9
 
 (I produced the quantitative results and visualizations for the monograph.)
+
