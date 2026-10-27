@@ -10,7 +10,7 @@ This repository contains analysis code only. Coroners' Court records, pupil and 
 
 - **School mental health:** multi-year pupil surveys from the Thematic Network on Developing Students' Positive Attitudes and Values, with universal and selective components
 - **Suicide epidemiology:** Coroners' Court data, school-level clustering, helium-inhalation suicides, online discussion and decriminalisation
-- **Poverty and health services:** a case-control study, census microdata, small-area mortality mapping and monograph indexing
+- **Poverty and health services:** a case-control study, census microdata, small-area mortality mapping, monograph indexing, and CSSA administrative welfare data decomposition
 - **Methods:** multi-year data merging, mixed models, clustering, difference-in-differences, time-series analysis, survival-free count modelling and cross-validation
 - **Outputs:** cleaned analysis files, report tables, figures, search terms and reproducible research summaries
 - **Data policy:** code is published without participant-level or identifiable data
@@ -22,7 +22,8 @@ This repository contains analysis code only. Coroners' Court records, pupil and 
 | `qtn/` | Thematic Network on Developing Students' Positive Attitudes and Values | Multi-year pupil survey cleaning, repeated-measures modelling, teacher measures and programme-report figures |
 | `school_clusters/` | School clustering and student suicide | Comparison of four clustering approaches and linkage to student suicide counts |
 | `cc/` | Coroners' Court suicide epidemiology | Record recoding, descriptive analysis and difference-in-differences analysis |
-| `poverty/` | Poverty, census and health services | Case-control analysis, census microdata, small-area mortality mapping and monograph indexing |
+| `poverty/` | Poverty, census and health services | Case-control analysis, census microdata, small-area mortality mapping, monograph indexing, and CSSA administrative welfare data decomposition |
+| `cssa/` | Comprehensive Social Security Assistance | Administrative welfare data decomposition — recipient counts by age group, small-area variation in benefit uptake |
 | `helium/` | Helium-inhalation suicides | Case summaries, news coding, timeline visualization and scan statistics |
 | `early_warning/` | Suicide-related online discussion | Daily time-series analysis and media search-term curation |
 | `suicide_law/` | Decriminalisation of suicide | Cross-national comparison |
@@ -130,26 +131,28 @@ A sample-based poverty line is calculated as half the median household income at
 
 `book_indexing.R` reduces the completed monograph to one-, two- and three-word frequency tables to support keyword indexing.
 
+### CSSA administrative data
+
+`cssa/` contains Comprehensive Social Security Assistance (CSSA) recipient counts by age group across two time points (2016 and 2020). These administrative welfare extracts were used for decomposition analysis of social assistance uptake patterns across demographic groups, linking administrative records to model small-area variation in benefit receipt.
+
 ## Online early warning of suicide
 
-`early_warning/early_warning.R` compares daily case counts with daily suicide-related online discussion. It uses Poisson regression with pre/post indicators, checks residual autocorrelation and refits the model as GEE with an AR(1) correlation structure.
+`early_warning/early_warning.R` compares daily suicide case counts with daily suicide-related online discussion from LIHKG and HKGolden forums. It uses Poisson regression with pre/post indicators, checks residual autocorrelation, and refits the model as GEE with an AR(1) correlation structure. Alternative event dates are examined in a grid search, with model fit reported at each date.
 
-Alternative event dates are examined in a grid search, with model fit reported at each date.
-
-`meltwater_search_terms.R` contains a Boolean media query combining Hong Kong news agencies with Chinese suicide-related terms and exclusions for irrelevant coverage.
+`meltwater_search_terms.R` contains a Boolean media query combining Hong Kong news agencies with Chinese suicide-related terms and exclusions for irrelevant coverage. This is large-scale online suicide surveillance: daily monitoring of forum and news media for suicide-related signals.
 
 The committed SaTSCan result for this period was not significant. The null result is retained with the method used.
 
 ## Helium-inhalation suicides
 
-`helium/` covers 46 cases recorded between 2011 and 2017.
+`helium/` covers 46 helium-inhalation suicide cases recorded between 2011 and 2017 from Meltwater media-monitoring exports.
 
-- `news_articles.R` converts manually coded news articles into analysable data
+- `news_articles.R` converts manually coded news articles into analysable data (3127 coded articles)
 - `helium_analysis.R` calculates monthly rates and replicates the scan statistic in R
 - `helium_timeline.Rmd` produces a knitted timeline
 - A custom `ggplot2` timeline scales case markers by the number of related news articles
 
-The committed SaTSCan output identifies a significant temporal cluster from August 2014 to January 2015.
+This is news-media suicide surveillance: Meltwater Boolean search queries capture Hong Kong news coverage of helium-inhalation suicides, and SaTSCan space-time cluster detection identifies significant temporal clusters (August 2014 to January 2015).
 
 ## Decriminalisation of suicide
 
@@ -230,4 +233,5 @@ Quantitative analyses from this period contributed to:
 Yip PS. *Social unrest and the poverty problem in Hong Kong*. Springer Singapore; 2021. https://doi.org/10.1007/978-981-33-6629-9
 
 (I produced the quantitative results and visualizations for the monograph.)
+
 
